@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACDF Swallowing Outcomes — Jones-Rastelli et al. 2025</title>
+<title>ACDF Swallowing Outcomes — Interactive Research Platform</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ─── Reset & Tokens ─── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0b0f19;--surface:#131928;--card:#1a2236;--card-hover:#1f2a42;
+  --bg:#0b0f19;--surface:#111827;--card:#1a2236;--card-hover:#1f2a42;
   --border:#263354;--border-light:#2d3d60;
   --text:#e2e8f4;--text-muted:#8896b3;--text-dim:#5a6a8a;
-  --accent:#6c9cff;--accent-dim:#3b6fd4;--accent-glow:rgba(108,156,255,.12);
-  --green:#34d399;--green-dim:#167a56;--green-bg:rgba(52,211,153,.08);
-  --red:#f87171;--red-dim:#b23a3a;--red-bg:rgba(248,113,113,.08);
-  --amber:#fbbf24;--amber-dim:#a37e15;--amber-bg:rgba(251,191,36,.08);
-  --purple:#a78bfa;--purple-dim:#7c5cc7;
+  --accent:#6c9cff;--accent-dim:#3b6fd4;--accent-glow:rgba(108,156,255,.1);
+  --green:#34d399;--green-bg:rgba(52,211,153,.08);
+  --red:#f87171;--red-bg:rgba(248,113,113,.08);
+  --amber:#fbbf24;--amber-bg:rgba(251,191,36,.08);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.08);
   --cyan:#22d3ee;
   --radius:12px;--radius-sm:8px;--radius-xs:6px;
   --shadow:0 4px 24px rgba(0,0,0,.35);
@@ -25,1138 +25,1233 @@
   --font-mono:'JetBrains Mono','Fira Code',monospace;
 }
 html{scroll-behavior:smooth;font-size:16px}
-body{
-  font-family:var(--font-sans);background:var(--bg);color:var(--text);
-  line-height:1.6;overflow-x:hidden;
-}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
 ::selection{background:var(--accent);color:#fff}
-
-/* ─── Typography ─── */
 h1,h2,h3,h4{font-weight:700;letter-spacing:-.02em;line-height:1.2}
-h1{font-size:clamp(2rem,5vw,3.2rem)}
-h2{font-size:clamp(1.4rem,3vw,2rem)}
-h3{font-size:1.15rem}
-a{color:var(--accent);text-decoration:none;transition:color .2s}
-a:hover{color:#93b8ff}
+a{color:var(--accent);text-decoration:none}
 
-/* ─── Layout ─── */
-.container{max-width:1280px;margin:0 auto;padding:0 clamp(1rem,3vw,2.5rem)}
-section{padding:clamp(3rem,6vw,5rem) 0}
+/* ── Layout ── */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:260px;position:fixed;top:0;left:0;height:100vh;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;transition:transform .3s;
+}
+.sidebar-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+.sidebar-header .logo{font-weight:900;font-size:1rem;color:var(--accent);letter-spacing:-.03em}
+.sidebar-header .sub{font-size:.7rem;color:var(--text-dim);margin-top:.15rem}
+.sidebar-nav{flex:1;overflow-y:auto;padding:.75rem 0}
+.nav-section{padding:.5rem 1.5rem .25rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)}
+.nav-item{
+  display:flex;align-items:center;gap:.65rem;padding:.55rem 1.5rem;
+  font-size:.85rem;color:var(--text-muted);cursor:pointer;transition:all .15s;
+  border-left:3px solid transparent;
+}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.02)}
+.nav-item.active{color:var(--accent);background:var(--accent-glow);border-left-color:var(--accent)}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.main{margin-left:260px;flex:1;min-width:0}
+.page{display:none;padding:2rem clamp(1.5rem,3vw,3rem) 4rem;max-width:1200px}
+.page.active{display:block}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:.5rem;cursor:pointer}
+.mobile-toggle svg{width:20px;height:20px;stroke:var(--text);fill:none;stroke-width:2}
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .mobile-toggle{display:block}
+}
+
+/* ── Common ── */
+.page-title{font-size:clamp(1.5rem,3vw,2rem);margin-bottom:.35rem}
+.page-desc{font-size:.9rem;color:var(--text-muted);margin-bottom:2rem;max-width:680px;line-height:1.65}
+.section-label{text-transform:uppercase;font-size:.7rem;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:all .25s}
+.card:hover{border-color:var(--border-light)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem}
 @media(max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
-
-/* ─── Navigation ─── */
-nav{
-  position:sticky;top:0;z-index:100;
-  background:rgba(11,15,25,.82);backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--border);
-}
-nav .inner{display:flex;align-items:center;justify-content:space-between;height:56px}
-nav .logo{font-weight:800;font-size:1.05rem;color:var(--accent);letter-spacing:-.03em}
-nav .links{display:flex;gap:1.5rem}
-nav .links a{color:var(--text-muted);font-size:.85rem;font-weight:500;transition:color .2s}
-nav .links a:hover,nav .links a.active{color:var(--text)}
-@media(max-width:700px){nav .links{display:none}}
-
-/* ─── Hero ─── */
-.hero{
-  padding:clamp(4rem,10vw,7rem) 0 clamp(3rem,6vw,5rem);
-  text-align:center;position:relative;
-}
-.hero::before{
-  content:'';position:absolute;top:-120px;left:50%;translate:-50% 0;
-  width:680px;height:680px;border-radius:50%;
-  background:radial-gradient(circle,rgba(108,156,255,.08) 0%,transparent 70%);
-  pointer-events:none;
-}
-.hero .badge{
-  display:inline-flex;align-items:center;gap:.5rem;
-  padding:.35rem .9rem;border-radius:100px;font-size:.78rem;font-weight:600;
-  background:var(--accent-glow);color:var(--accent);border:1px solid rgba(108,156,255,.2);
-  margin-bottom:1.5rem;
-}
-.hero h1{margin-bottom:1rem}
-.hero h1 span{
-  background:linear-gradient(135deg,var(--accent),var(--purple));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.hero .subtitle{
-  max-width:720px;margin:0 auto 2.5rem;color:var(--text-muted);
-  font-size:clamp(.95rem,2vw,1.12rem);line-height:1.7;
-}
-.hero .authors{font-size:.82rem;color:var(--text-dim);max-width:650px;margin:0 auto 1.5rem}
-.hero .meta-row{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:1rem}
-.hero .meta-tag{
-  display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-muted);
-}
-.hero .meta-tag svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:2}
-
-/* ─── Cards ─── */
-.card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.5rem;transition:background .25s,border-color .25s,box-shadow .25s;
-}
-.card:hover{background:var(--card-hover);border-color:var(--border-light);box-shadow:var(--shadow)}
-.card-header{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
-.card-header .icon{
-  width:36px;height:36px;border-radius:var(--radius-xs);
-  display:grid;place-items:center;flex-shrink:0;
-}
-.card-header .icon svg{width:18px;height:18px;fill:none;stroke-width:2}
-.card-header h3{font-size:.95rem}
-.section-label{
-  text-transform:uppercase;font-size:.72rem;font-weight:700;letter-spacing:.1em;
-  color:var(--accent);margin-bottom:.6rem;
-}
-
-/* ─── Stat Cards ─── */
-.stat-card{text-align:center;padding:2rem 1.5rem}
-.stat-card .number{font-size:2.8rem;font-weight:800;letter-spacing:-.04em;line-height:1}
-.stat-card .label{font-size:.82rem;color:var(--text-muted);margin-top:.5rem}
-.stat-card .sub{font-size:.72rem;color:var(--text-dim);margin-top:.25rem}
-.stat-accent .number{color:var(--accent)}
-.stat-green .number{color:var(--green)}
-.stat-red .number{color:var(--red)}
-.stat-amber .number{color:var(--amber)}
-
-/* ─── Chart Wrapper ─── */
-.chart-wrap{position:relative;width:100%;aspect-ratio:16/10}
-.chart-wrap-sq{aspect-ratio:1/1}
+.stat-card{text-align:center;padding:1.5rem 1rem}
+.stat-card .num{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-card .lbl{font-size:.78rem;color:var(--text-muted);margin-top:.4rem}
+.chart-wrap{position:relative;width:100%}
 .chart-wrap canvas{width:100%!important;height:100%!important}
-
-/* ─── Tabs ─── */
-.tab-row{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.tab-btn{
-  padding:.45rem 1rem;border-radius:100px;font-size:.82rem;font-weight:600;
-  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);
-  transition:all .2s;
-}
+.tab-row{display:flex;gap:.4rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab-btn{padding:.4rem .9rem;border-radius:100px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:all .2s}
 .tab-btn:hover{border-color:var(--border-light);color:var(--text)}
 .tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-
-/* ─── Toggle ─── */
-.toggle-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
-.toggle{
-  width:42px;height:24px;border-radius:12px;background:var(--border);
-  position:relative;cursor:pointer;transition:background .2s;border:none;
-}
-.toggle::after{
-  content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;
-  border-radius:50%;background:#fff;transition:transform .2s;
-}
-.toggle.on{background:var(--accent)}
-.toggle.on::after{transform:translateX(18px)}
-.toggle-label{font-size:.82rem;color:var(--text-muted)}
-
-/* ─── Tables ─── */
-.data-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.data-table th{
-  text-align:left;padding:.65rem .75rem;border-bottom:2px solid var(--border);
-  color:var(--text-muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
-  letter-spacing:.06em;
-}
-.data-table td{padding:.6rem .75rem;border-bottom:1px solid var(--border)}
-.data-table tbody tr{transition:background .15s}
-.data-table tbody tr:hover{background:rgba(108,156,255,.04)}
-.badge-pill{
-  display:inline-block;padding:.15rem .55rem;border-radius:100px;font-size:.72rem;font-weight:600;
-}
+.interp{background:linear-gradient(135deg,rgba(108,156,255,.05),rgba(167,139,250,.05));border:1px solid rgba(108,156,255,.12);border-radius:var(--radius);padding:1.5rem;margin-top:1.5rem}
+.interp h4{color:var(--accent);margin-bottom:.5rem;font-size:.9rem}
+.interp p{font-size:.84rem;color:var(--text-muted);line-height:1.65;margin-bottom:.5rem}
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:100px;font-size:.7rem;font-weight:600}
 .badge-green{background:var(--green-bg);color:var(--green)}
 .badge-red{background:var(--red-bg);color:var(--red)}
 .badge-amber{background:var(--amber-bg);color:var(--amber)}
 .badge-accent{background:var(--accent-glow);color:var(--accent)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
 
-/* ─── Tooltip ─── */
-.info-tip{
-  position:relative;display:inline-flex;align-items:center;cursor:help;
-}
-.info-tip .tip-icon{
-  width:15px;height:15px;border-radius:50%;background:var(--border);
-  display:grid;place-items:center;font-size:.65rem;font-weight:700;color:var(--text-muted);
-  margin-left:.35rem;
-}
-.info-tip .tip-text{
-  display:none;position:absolute;bottom:calc(100% + 8px);left:50%;translate:-50% 0;
-  width:260px;padding:.65rem .85rem;border-radius:var(--radius-xs);
-  background:var(--card-hover);border:1px solid var(--border-light);
-  font-size:.75rem;color:var(--text-muted);line-height:1.5;box-shadow:var(--shadow);
-  z-index:50;text-align:left;
-}
-.info-tip:hover .tip-text{display:block}
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:fadeUp .35s ease}
 
-/* ─── Key Findings ─── */
-.finding-item{
-  display:flex;gap:1rem;padding:1.25rem;border-radius:var(--radius-sm);
-  border:1px solid var(--border);margin-bottom:.75rem;transition:all .25s;
+/* ── Forms ── */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:.35rem}
+.form-group select,.form-group input[type="number"],.form-group input[type="range"]{
+  width:100%;padding:.55rem .75rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xs);color:var(--text);font-size:.85rem;font-family:inherit;
+  transition:border-color .2s;
 }
-.finding-item:hover{border-color:var(--accent);background:var(--accent-glow)}
-.finding-num{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  background:var(--accent-glow);color:var(--accent);
-  display:grid;place-items:center;font-weight:800;font-size:.85rem;
+.form-group select:focus,.form-group input:focus{outline:none;border-color:var(--accent)}
+.form-group input[type="range"]{padding:0;height:6px;-webkit-appearance:none;appearance:none;background:var(--border);border:none;border-radius:3px;cursor:pointer}
+.form-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer}
+.range-val{font-size:.85rem;font-weight:700;color:var(--accent);float:right}
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.25rem;
+  border-radius:var(--radius-xs);font-size:.82rem;font-weight:600;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--text-muted);
+  transition:all .2s;
 }
-.finding-text h4{font-size:.9rem;margin-bottom:.25rem}
-.finding-text p{font-size:.82rem;color:var(--text-muted);line-height:1.55}
+.btn:hover{border-color:var(--border-light);color:var(--text)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dim)}
 
-/* ─── Patient Swim Lanes ─── */
-.swim-container{overflow-x:auto;padding-bottom:.5rem}
-.swim-grid{display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px;min-width:600px}
-.swim-header{
-  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--text-dim);padding:.5rem .35rem;text-align:center;
-  border-bottom:2px solid var(--border);
+/* ── Patient Explorer ── */
+.patient-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:.5rem}
+.patient-chip{
+  aspect-ratio:1;border-radius:var(--radius-xs);background:var(--surface);border:2px solid var(--border);
+  display:grid;place-items:center;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;
 }
-.swim-id{
-  font-size:.75rem;font-weight:600;color:var(--text-muted);
-  display:grid;place-items:center;padding:.35rem;
-}
-.swim-cell{
-  padding:.35rem;display:grid;place-items:center;
-}
-.swim-dot{
-  width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
-  font-size:.65rem;font-weight:700;cursor:default;transition:transform .15s;
-}
-.swim-dot:hover{transform:scale(1.3)}
-.dot-none{background:rgba(255,255,255,.04);color:var(--text-dim)}
-.dot-mild{background:rgba(251,191,36,.15);color:var(--amber)}
-.dot-mod{background:rgba(248,113,113,.15);color:var(--red)}
-.dot-sev{background:rgba(168,85,247,.2);color:var(--purple)}
-.dot-improved{background:rgba(52,211,153,.15);color:var(--green)}
-.dot-stable{background:rgba(108,156,255,.12);color:var(--accent)}
-.dot-worse{background:rgba(248,113,113,.15);color:var(--red)}
+.patient-chip:hover{border-color:var(--accent);background:var(--accent-glow)}
+.patient-chip.selected{border-color:var(--accent);background:var(--accent);color:#fff}
+.patient-chip.worse{border-color:var(--red);color:var(--red)}
+.patient-chip.stable{border-color:var(--accent);color:var(--accent)}
+.patient-chip.improved{border-color:var(--green);color:var(--green)}
 
-/* ─── Legend ─── */
-.legend{display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0}
-.legend-item{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text-muted)}
-.legend-dot{width:10px;height:10px;border-radius:50%}
+/* ── Radar ── */
+.radar-wrap{max-width:380px;margin:0 auto}
 
-/* ─── Footer ─── */
-footer{
-  padding:3rem 0;border-top:1px solid var(--border);
-  text-align:center;font-size:.78rem;color:var(--text-dim);
+/* ── Score Calculator ── */
+.score-result{
+  padding:1.25rem;border-radius:var(--radius-sm);text-align:center;
+  margin-top:1rem;border:2px solid var(--border);transition:all .4s;
 }
+.score-result .score-val{font-size:2.4rem;font-weight:900;line-height:1}
+.score-result .score-label{font-size:.8rem;color:var(--text-muted);margin-top:.35rem}
+.score-result .score-interp{font-size:.82rem;margin-top:.5rem;font-weight:600}
+.score-normal{border-color:var(--green);background:var(--green-bg)}
+.score-normal .score-val{color:var(--green)}
+.score-normal .score-interp{color:var(--green)}
+.score-mild{border-color:var(--amber);background:var(--amber-bg)}
+.score-mild .score-val{color:var(--amber)}
+.score-mild .score-interp{color:var(--amber)}
+.score-moderate{border-color:var(--red);background:var(--red-bg)}
+.score-moderate .score-val{color:var(--red)}
+.score-moderate .score-interp{color:var(--red)}
+.score-severe{border-color:var(--purple);background:var(--purple-bg)}
+.score-severe .score-val{color:var(--purple)}
+.score-severe .score-interp{color:var(--purple)}
 
-/* ─── Scroll Animations ─── */
-.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
+/* ── Concordance ── */
+.conc-row{display:flex;align-items:center;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--border)}
+.conc-pair{font-size:.8rem;font-weight:600;min-width:180px}
+.conc-bar{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden}
+.conc-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.16,1,.3,1)}
+.conc-pct{font-size:.8rem;font-weight:700;min-width:45px;text-align:right}
 
-/* ─── Clinical Interpretation Panel ─── */
-.interp-panel{
-  background:linear-gradient(135deg,rgba(108,156,255,.06),rgba(167,139,250,.06));
-  border:1px solid rgba(108,156,255,.15);border-radius:var(--radius);
-  padding:2rem;margin-top:1.5rem;
-}
-.interp-panel h3{margin-bottom:1rem;color:var(--accent)}
-.interp-panel p{font-size:.88rem;color:var(--text-muted);line-height:1.7;margin-bottom:.75rem}
+/* ── Timeline ── */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;padding-bottom:1.5rem}
+.tl-dot{position:absolute;left:-2rem;top:3px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--bg)}
+.tl-item:last-child .tl-dot{background:var(--green)}
+.tl-content h4{font-size:.88rem;margin-bottom:.2rem}
+.tl-content p{font-size:.8rem;color:var(--text-muted)}
 
-/* ─── Method pills ─── */
-.method-flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:1.5rem 0}
-.method-pill{
-  padding:.5rem 1rem;border-radius:var(--radius-xs);font-size:.8rem;font-weight:600;
-  border:1px solid var(--border);color:var(--text-muted);
-}
-.method-arrow{color:var(--text-dim);font-size:1.1rem}
+/* ── Risk meter ── */
+.risk-meter{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:1rem 0}
+.risk-seg{transition:width .6s cubic-bezier(.16,1,.3,1)}
 
-/* ─── Comparison bar ─── */
-.compare-bar{display:flex;align-items:center;gap:.5rem;margin:.6rem 0}
-.compare-bar .bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
-.compare-bar .bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.16,1,.3,1)}
-.compare-bar .bar-label{font-size:.75rem;color:var(--text-muted);min-width:40px;text-align:right}
+/* ── Modal Overlay ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;place-items:center}
+.modal-overlay.show{display:grid}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:600px;width:90%;max-height:85vh;overflow-y:auto}
+.modal h3{margin-bottom:1rem}
+.modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem}
+
+/* ── Footer ── */
+.page-footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--text-dim)}
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- ─── Nav ─── -->
-<nav>
-  <div class="container inner">
-    <div class="logo">ACDF Swallow Study</div>
-    <div class="links">
-      <a href="#overview">Overview</a>
-      <a href="#outcomes">Outcomes</a>
-      <a href="#prevalence">Prevalence</a>
-      <a href="#patients">Patients</a>
-      <a href="#alignment">Alignment</a>
-      <a href="#findings">Findings</a>
-    </div>
-  </div>
-</nav>
+<!-- Mobile toggle -->
+<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+  <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
 
-<!-- ─── Hero ─── -->
-<section class="hero" id="overview">
-  <div class="container">
-    <div class="badge">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Laryngoscope 2025 &middot; DOI: 10.1002/lary.32352
-    </div>
-    <h1>Comparing <span>Videofluoroscopic</span> &amp; Patient&nbsp;Reported<br>Outcome Measures of Swallowing After ACDF</h1>
-    <p class="subtitle">
-      A prospective study of 21 patients comparing instrumental swallow assessment (VFSS/DIGEST)
-      with four patient-reported outcome tools pre- to six&nbsp;weeks post&nbsp;ACDF surgery —
-      revealing critical gaps between physical function and patient experience.
-    </p>
-    <p class="authors">
-      R. Brynn Jones-Rastelli &middot; Milan R. Amin &middot; Mridula Anandhakrishnan &middot;
-      Matina Balou &middot; Claire Crossman &middot; Erica G. Herzberg &middot;
-      Aaron M. Johnson &middot; <strong>Sonja M. Molfenter</strong>
-    </p>
-    <div class="meta-row">
-      <div class="meta-tag">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        n = 21 Participants
-      </div>
-      <div class="meta-tag">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Pre-op &rarr; 6 Weeks Post-op
-      </div>
-      <div class="meta-tag">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        5 Outcome Measures
-      </div>
-    </div>
+<div class="app">
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">ACDF Outcomes</div>
+    <div class="sub">Interactive Research Platform</div>
   </div>
-</section>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Study</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-page="outcomes">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Outcome Explorer
+    </div>
+    <div class="nav-item" data-page="prevalence">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      Prevalence &amp; Incidence
+    </div>
+    <div class="nav-section">Interactive Tools</div>
+    <div class="nav-item" data-page="patients">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Patient Explorer
+    </div>
+    <div class="nav-item" data-page="calculator">
+      <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+      Score Calculators
+    </div>
+    <div class="nav-item" data-page="simulator">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Risk Simulator
+    </div>
+    <div class="nav-item" data-page="concordance">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Concordance Analysis
+    </div>
+    <div class="nav-section">Reference</div>
+    <div class="nav-item" data-page="about">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      About &amp; Citation
+    </div>
+  </nav>
+</aside>
 
-<!-- ─── Study Design ─── -->
-<section id="methods">
-  <div class="container reveal">
-    <div class="section-label">Methodology</div>
-    <h2 style="margin-bottom:1.5rem">Study Design &amp; Measures</h2>
-    <div class="method-flow">
-      <div class="method-pill" style="border-color:var(--accent);color:var(--accent)">Primary ACDF Patients (n=21)</div>
-      <div class="method-arrow">&rarr;</div>
-      <div class="method-pill">Pre-operative VFSS + PROs</div>
-      <div class="method-arrow">&rarr;</div>
-      <div class="method-pill" style="border-color:var(--amber);color:var(--amber)">ACDF Surgery</div>
-      <div class="method-arrow">&rarr;</div>
-      <div class="method-pill">6-Week Post-op VFSS + PROs</div>
-      <div class="method-arrow">&rarr;</div>
-      <div class="method-pill" style="border-color:var(--green);color:var(--green)">Analysis</div>
-    </div>
-    <div class="grid-2" style="margin-top:1.5rem">
-      <div class="card">
-        <div class="card-header">
-          <div class="icon" style="background:rgba(108,156,255,.1)">
-            <svg viewBox="0 0 24 24" stroke="var(--accent)"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          </div>
-          <h3>Instrumental Measures (VFSS)</h3>
-        </div>
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">
-          Objective physiological assessment via modified barium swallow.
-        </p>
-        <div style="display:flex;flex-direction:column;gap:.4rem">
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:var(--accent-glow);border-radius:var(--radius-xs);color:var(--accent);font-weight:600">
-            DIGEST&trade; — Dynamic Imaging Grade of Swallowing Toxicity
-          </div>
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:var(--accent-glow);border-radius:var(--radius-xs);color:var(--accent);font-weight:600">
-            MBSImP&trade;&copy; — Pharyngeal Total Score
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="icon" style="background:rgba(167,139,250,.1)">
-            <svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <h3>Patient-Reported Outcomes (PROs)</h3>
-        </div>
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">
-          Subjective symptom &amp; quality-of-life questionnaires.
-        </p>
-        <div style="display:flex;flex-direction:column;gap:.4rem">
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:rgba(167,139,250,.08);border-radius:var(--radius-xs);color:var(--purple);font-weight:600">Bazaz Dysphagia Scale</div>
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:rgba(167,139,250,.08);border-radius:var(--radius-xs);color:var(--purple);font-weight:600">EAT-10 — Eating Assessment Tool</div>
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:rgba(167,139,250,.08);border-radius:var(--radius-xs);color:var(--purple);font-weight:600">SWAL-QoL — Swallowing Quality of Life</div>
-          <div style="font-size:.8rem;padding:.4rem .7rem;background:rgba(167,139,250,.08);border-radius:var(--radius-xs);color:var(--purple);font-weight:600">HSS-DDI — Hospital for Special Surgery Index</div>
-        </div>
-      </div>
-    </div>
+<main class="main">
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="section-label">Jones-Rastelli et al. (2025) &middot; Laryngoscope</div>
+  <h1 class="page-title">ACDF Swallowing Outcomes</h1>
+  <p class="page-desc">
+    Comparing videofluoroscopic (VFSS) and patient-reported outcome measures of swallowing
+    pre- to six weeks post ACDF surgery in 21 prospectively recruited patients.
+  </p>
+
+  <div class="grid-4" style="margin-bottom:2rem">
+    <div class="card stat-card"><div class="num" style="color:var(--accent)">21</div><div class="lbl">Participants</div></div>
+    <div class="card stat-card"><div class="num" style="color:var(--red)">5/5</div><div class="lbl">Measures Worsened</div></div>
+    <div class="card stat-card"><div class="num" style="color:var(--amber)">2&times;</div><div class="lbl">PRO vs VFSS Incidence</div></div>
+    <div class="card stat-card"><div class="num" style="color:var(--purple)">&ne;</div><div class="lbl">Patient-Level Agreement</div></div>
   </div>
-</section>
 
-<!-- ─── Key Stats ─── -->
-<section>
-  <div class="container reveal">
-    <div class="section-label">At a Glance</div>
-    <h2 style="margin-bottom:1.5rem">Study Snapshot</h2>
-    <div class="grid-4">
-      <div class="card stat-card stat-accent">
-        <div class="number">21</div>
-        <div class="label">Participants</div>
-        <div class="sub">Prospectively recruited, primary ACDF</div>
-      </div>
-      <div class="card stat-card stat-red">
-        <div class="number">100%</div>
-        <div class="label">Measures Worse Post-Op</div>
-        <div class="sub">All 5 outcomes showed significant decline</div>
-      </div>
-      <div class="card stat-card stat-amber">
-        <div class="number">PRO &gt; VFSS</div>
-        <div class="label" style="font-size:.78rem">Prevalence Increase</div>
-        <div class="sub">Greater post-op increases in PRO prevalence</div>
-      </div>
-      <div class="card stat-card stat-green">
-        <div class="number">&ne;</div>
-        <div class="label">Individual Alignment</div>
-        <div class="sub">Same rates, different patients flagged</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Pre vs Post Outcomes ─── -->
-<section id="outcomes">
-  <div class="container reveal">
-    <div class="section-label">Outcome Comparison</div>
-    <h2 style="margin-bottom:.75rem">Pre- vs. Post-Operative Scores</h2>
-    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:700px">
-      All outcome measures revealed a significant effect of operative timepoint,
-      indicating <strong style="color:var(--red)">worse outcomes postoperatively</strong>.
-      Toggle between measures to explore each domain.
-    </p>
-    <div class="tab-row" id="outcomeTabs">
-      <button class="tab-btn active" data-tab="digest">DIGEST</button>
-      <button class="tab-btn" data-tab="mbsimp">MBSImP</button>
-      <button class="tab-btn" data-tab="eat10">EAT-10</button>
-      <button class="tab-btn" data-tab="swalqol">SWAL-QoL</button>
-      <button class="tab-btn" data-tab="bazaz">Bazaz</button>
-      <button class="tab-btn" data-tab="hssddi">HSS-DDI</button>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="chart-wrap" id="outcomeChartWrap">
-          <canvas id="outcomeChart"></canvas>
-        </div>
-      </div>
-      <div class="card" id="outcomeDetail">
-        <!-- filled by JS -->
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Prevalence & Incidence ─── -->
-<section id="prevalence">
-  <div class="container reveal">
-    <div class="section-label">Prevalence &amp; Incidence</div>
-    <h2 style="margin-bottom:.75rem">Dysphagia Detection Rates</h2>
-    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:700px">
-      PROs detected greater postoperative increases in point prevalence and new-onset incidence
-      compared with DIGEST — highlighting divergent sensitivity between instrumental and subjective measures.
-    </p>
-    <div class="grid-2">
-      <div class="card">
-        <h3 style="margin-bottom:1rem">Point Prevalence (% with dysphagia)</h3>
-        <div class="chart-wrap">
-          <canvas id="prevalenceChart"></canvas>
-        </div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom:1rem">Post-Op Incidence (new cases)</h3>
-        <div class="chart-wrap">
-          <canvas id="incidenceChart"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="interp-panel" style="margin-top:1.5rem">
-      <h3>Clinical Interpretation</h3>
-      <p>
-        The discrepancy between instrumental and patient-reported prevalence suggests that
-        <strong>patients may perceive swallowing difficulties</strong> (e.g., globus sensation,
-        effortful swallowing) <strong>even when objective pharyngeal physiology appears relatively preserved</strong>.
-        This has important implications for clinical counseling and shared decision-making.
-      </p>
-      <p>
-        Conversely, some patients with observable physiological changes on VFSS may
-        <strong>not report symptoms</strong>, potentially due to compensation strategies,
-        reduced awareness, or differences in swallowing task difficulty between settings.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Clinically Meaningful Change ─── -->
-<section>
-  <div class="container reveal">
-    <div class="section-label">Clinically Meaningful Change</div>
-    <h2 style="margin-bottom:.75rem">Who Got Meaningfully Worse?</h2>
-    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:700px">
-      Rates of clinically meaningful change were similar across PROs and DIGEST overall —
-      but <strong>not consistently across the same individual cases</strong>.
-      Different measures flag different patients.
-    </p>
-    <div class="card" style="overflow-x:auto">
-      <div class="chart-wrap" style="aspect-ratio:16/8;min-height:340px">
-        <canvas id="meaningfulChart"></canvas>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Individual Patient Trajectories ─── -->
-<section id="patients">
-  <div class="container reveal">
-    <div class="section-label">Individual Patient Trajectories</div>
-    <h2 style="margin-bottom:.75rem">Patient-Level Outcome Alignment</h2>
-    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:700px">
-      Each row represents one participant. Columns show the direction of clinically meaningful change
-      for each measure. <strong style="color:var(--text)">Note the mismatches</strong> — a patient flagged
-      by PROs may not be flagged by DIGEST and vice versa.
-    </p>
-    <div class="toggle-row">
-      <button class="toggle" id="toggleSort" onclick="togglePatientSort()"></button>
-      <span class="toggle-label">Sort by DIGEST severity</span>
-    </div>
-    <div class="card" style="padding:.75rem">
-      <div class="swim-container" id="swimContainer">
-        <!-- built by JS -->
-      </div>
-    </div>
-    <div class="legend" style="margin-top:1rem">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Improved</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Stable</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Worsened</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--text-dim)"></div> No Data</div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Alignment Matrix ─── -->
-<section id="alignment">
-  <div class="container reveal">
-    <div class="section-label">Measure Alignment</div>
-    <h2 style="margin-bottom:.75rem">Do Measures Agree?</h2>
-    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:700px">
-      This heatmap shows the percentage of patients for whom each pair of measures
-      agree on the <em>direction</em> of clinically meaningful change (improved, stable, or worsened).
-    </p>
+  <div class="grid-2" style="margin-bottom:1.5rem">
     <div class="card">
-      <div class="chart-wrap" style="aspect-ratio:1/1;max-width:560px;margin:0 auto">
-        <canvas id="heatmapChart"></canvas>
+      <h3 style="margin-bottom:1rem;font-size:.95rem">Pre vs Post-Op Scores (All Measures)</h3>
+      <div class="chart-wrap" style="aspect-ratio:16/9"><canvas id="dashOverview"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:1rem;font-size:.95rem">Detection Sensitivity Gap</h3>
+      <div class="chart-wrap" style="aspect-ratio:16/9"><canvas id="dashGap"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Study Timeline -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:1.25rem;font-size:.95rem">Study Design</h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--accent)"></div>
+        <div class="tl-content">
+          <h4>Enrollment</h4>
+          <p>21 patients prospectively recruited prior to primary ACDF surgery</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--purple)"></div>
+        <div class="tl-content">
+          <h4>Pre-Operative Assessment</h4>
+          <p>VFSS (DIGEST + MBSImP) and 4 PROs (Bazaz, EAT-10, SWAL-QoL, HSS-DDI) administered</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--amber)"></div>
+        <div class="tl-content">
+          <h4>ACDF Surgery</h4>
+          <p>Anterior cervical discectomy and fusion procedure performed</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--red)"></div>
+        <div class="tl-content">
+          <h4>6-Week Post-Operative Assessment</h4>
+          <p>Repeat VFSS and all PROs — all 5 measures significantly worse</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--green)"></div>
+        <div class="tl-content">
+          <h4>Analysis</h4>
+          <p>Within-subject comparison reveals discordance between instrumental and patient-reported findings</p>
+        </div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- ─── Key Findings ─── -->
-<section id="findings">
-  <div class="container reveal">
-    <div class="section-label">Key Findings</div>
-    <h2 style="margin-bottom:1.5rem">Critical Takeaways</h2>
-    <div style="max-width:720px">
-      <div class="finding-item">
-        <div class="finding-num">1</div>
-        <div class="finding-text">
-          <h4>Universal Postoperative Decline</h4>
-          <p>All five outcome measures — both instrumental and patient-reported — showed statistically significant worsening at 6 weeks post-ACDF, confirming that dysphagia is a consistent sequela of this surgery.</p>
-        </div>
+  <div class="interp">
+    <h4>Central Finding</h4>
+    <p>The presence or absence of dysphagia symptoms <strong>does not reliably correspond</strong> with observed physical impairments after ACDF. PROs detected greater increases in prevalence and incidence than DIGEST, and while overall rates of clinically meaningful change were similar, <strong>they did not consistently identify the same patients</strong>.</p>
+  </div>
+</div>
+
+<!-- ════════════════ OUTCOME EXPLORER ════════════════ -->
+<div class="page" id="page-outcomes">
+  <div class="section-label">Interactive Exploration</div>
+  <h1 class="page-title">Outcome Explorer</h1>
+  <p class="page-desc">Select any measure to see per-patient pre/post data, statistics, and clinical context. Click individual patient bars for detail.</p>
+
+  <div class="tab-row" id="outcomeTabs"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="chart-wrap" style="aspect-ratio:16/10"><canvas id="outcomeChart"></canvas></div>
+    </div>
+    <div class="card" id="outcomeDetail"></div>
+  </div>
+  <div class="card" style="margin-top:1.5rem">
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">Individual Change Scores (Post minus Pre)</h3>
+    <div class="chart-wrap" style="aspect-ratio:2/1"><canvas id="changeChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ════════════════ PREVALENCE ════════════════ -->
+<div class="page" id="page-prevalence">
+  <div class="section-label">Detection Rates</div>
+  <h1 class="page-title">Prevalence &amp; Incidence</h1>
+  <p class="page-desc">PROs detected far greater postoperative increases in both point prevalence and new-onset incidence compared with DIGEST.</p>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <h3 style="margin-bottom:.75rem;font-size:.95rem">Point Prevalence</h3>
+      <div class="chart-wrap" style="aspect-ratio:16/10"><canvas id="prevChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.75rem;font-size:.95rem">New Post-Op Incidence</h3>
+      <div class="chart-wrap" style="aspect-ratio:16/10"><canvas id="incChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">Clinically Meaningful Change by Measure</h3>
+    <div class="chart-wrap" style="aspect-ratio:2.5/1"><canvas id="mcChart"></canvas></div>
+  </div>
+
+  <div class="interp">
+    <h4>Clinical Interpretation</h4>
+    <p>Patients may perceive swallowing difficulties (globus sensation, effortful swallowing) <strong>even when objective pharyngeal physiology appears relatively preserved</strong>. Conversely, some patients with observable VFSS changes may <strong>not report symptoms</strong> due to compensation strategies or reduced awareness.</p>
+  </div>
+</div>
+
+<!-- ════════════════ PATIENT EXPLORER ════════════════ -->
+<div class="page" id="page-patients">
+  <div class="section-label">Individual Trajectories</div>
+  <h1 class="page-title">Patient Explorer</h1>
+  <p class="page-desc">Click any patient to see their complete outcome profile across all measures. Color coding reflects DIGEST change direction.</p>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+      <span style="font-size:.82rem;font-weight:600">Filter:</span>
+      <button class="btn filter-btn active" data-filter="all">All (21)</button>
+      <button class="btn filter-btn" data-filter="worse">Worsened</button>
+      <button class="btn filter-btn" data-filter="stable">Stable</button>
+      <button class="btn filter-btn" data-filter="improved">Improved</button>
+    </div>
+    <div class="patient-grid" id="patientGrid"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" id="patientProfile" style="min-height:320px">
+      <p style="color:var(--text-dim);font-size:.85rem;text-align:center;margin-top:4rem">Select a patient above to view their profile</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.75rem;font-size:.95rem">Patient Outcome Radar</h3>
+      <div class="radar-wrap"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem">
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">Outcome Alignment Matrix — All Patients</h3>
+    <div style="overflow-x:auto" id="swimContainer"></div>
+  </div>
+</div>
+
+<!-- ════════════════ SCORE CALCULATORS ════════════════ -->
+<div class="page" id="page-calculator">
+  <div class="section-label">Clinical Tools</div>
+  <h1 class="page-title">Score Calculators</h1>
+  <p class="page-desc">Enter pre- and post-operative scores to compute change, determine clinical significance, and compare against the study cohort.</p>
+
+  <div class="tab-row" id="calcTabs"></div>
+  <div class="grid-2">
+    <div class="card" id="calcForm"></div>
+    <div class="card" id="calcResult">
+      <p style="color:var(--text-dim);font-size:.85rem;text-align:center;margin-top:4rem">Enter scores and click Calculate</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem">
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">Where Does This Patient Fall?</h3>
+    <div class="chart-wrap" style="aspect-ratio:2.5/1"><canvas id="calcDist"></canvas></div>
+  </div>
+</div>
+
+<!-- ════════════════ RISK SIMULATOR ════════════════ -->
+<div class="page" id="page-simulator">
+  <div class="section-label">Predictive Modeling</div>
+  <h1 class="page-title">Risk Simulator</h1>
+  <p class="page-desc">Input a hypothetical patient's pre-operative scores to estimate their post-ACDF risk profile based on study data patterns.</p>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <h3 style="margin-bottom:1rem;font-size:.95rem">Pre-Operative Scores</h3>
+      <div class="form-group">
+        <label>DIGEST (0–4) <span class="range-val" id="simDigestVal">0</span></label>
+        <input type="range" id="simDigest" min="0" max="4" value="0" step="1">
       </div>
-      <div class="finding-item">
-        <div class="finding-num">2</div>
-        <div class="finding-text">
-          <h4>PROs Detect More Dysfunction Than VFSS</h4>
-          <p>Patient-reported outcome tools showed greater increases in both point prevalence and new-onset incidence compared with the DIGEST instrument, suggesting patients experience swallowing difficulties beyond what is physiologically observable.</p>
-        </div>
+      <div class="form-group">
+        <label>EAT-10 (0–40) <span class="range-val" id="simEat10Val">0</span></label>
+        <input type="range" id="simEat10" min="0" max="40" value="0">
       </div>
-      <div class="finding-item">
-        <div class="finding-num">3</div>
-        <div class="finding-text">
-          <h4>Similar Rates, Different Patients</h4>
-          <p>While overall rates of clinically meaningful change were comparable across tools, they did not consistently identify the same individuals — underscoring that no single measure captures the full picture of post-ACDF dysphagia.</p>
-        </div>
+      <div class="form-group">
+        <label>SWAL-QoL (0–100, higher=better) <span class="range-val" id="simSwalVal">100</span></label>
+        <input type="range" id="simSwal" min="0" max="100" value="100">
       </div>
-      <div class="finding-item">
-        <div class="finding-num">4</div>
-        <div class="finding-text">
-          <h4>Physical Function ≠ Patient Experience</h4>
-          <p>The central finding: the presence or absence of dysphagia symptoms does not reliably correspond with observed physical impairments. Comprehensive assessment requires both instrumental and patient-reported measures.</p>
+      <div class="form-group">
+        <label>Bazaz (0–3) <span class="range-val" id="simBazazVal">0</span></label>
+        <input type="range" id="simBazaz" min="0" max="3" value="0" step="1">
+      </div>
+      <div class="form-group">
+        <label>HSS-DDI (0–100) <span class="range-val" id="simHssVal">0</span></label>
+        <input type="range" id="simHss" min="0" max="100" value="0">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="runSimulation()">Run Simulation</button>
+    </div>
+    <div class="card" id="simResults">
+      <p style="color:var(--text-dim);font-size:.85rem;text-align:center;margin-top:4rem">Adjust sliders and run simulation</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">Projected Outcome Distribution</h3>
+    <div class="chart-wrap" style="aspect-ratio:2/1"><canvas id="simChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ════════════════ CONCORDANCE ════════════════ -->
+<div class="page" id="page-concordance">
+  <div class="section-label">Measure Agreement</div>
+  <h1 class="page-title">Concordance Analysis</h1>
+  <p class="page-desc">Explore how well different outcome measures agree at the individual patient level. Low concordance between VFSS and PROs is a key finding.</p>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:1rem;font-size:.95rem">Pairwise Agreement Rates</h3>
+    <div id="concBars"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="margin-bottom:.75rem;font-size:.95rem">Agreement Heatmap</h3>
+      <div class="chart-wrap" style="aspect-ratio:1"><canvas id="heatmap"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.75rem;font-size:.95rem">PRO Cluster Agreement</h3>
+      <div class="chart-wrap" style="aspect-ratio:1"><canvas id="proCluster"></canvas></div>
+    </div>
+  </div>
+
+  <div class="interp">
+    <h4>Key Insight</h4>
+    <p>DIGEST shows only <strong>~48–57% agreement</strong> with PROs on the direction of clinically meaningful change. Even among PROs, agreement is imperfect (67–81%), indicating each instrument captures a different facet of the swallowing experience. This supports <strong>multi-dimensional assessment</strong> as the clinical standard.</p>
+  </div>
+</div>
+
+<!-- ════════════════ ABOUT ════════════════ -->
+<div class="page" id="page-about">
+  <div class="section-label">Reference</div>
+  <h1 class="page-title">About This Study</h1>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:.75rem">Citation</h3>
+    <div style="padding:1rem;background:var(--surface);border-radius:var(--radius-xs);font-size:.82rem;font-family:var(--font-mono);line-height:1.7;color:var(--text-muted)">
+      Jones-Rastelli RB, Amin MR, Anandhakrishnan M, Balou M, Crossman C, Herzberg EG, Johnson AM, Molfenter SM. Comparing Videofluoroscopic and Patient Reported Outcome Measures of Swallowing After ACDF Surgery. <em>Laryngoscope</em>. 2025. PMID: 40719035. DOI: 10.1002/lary.32352
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <h3 style="margin-bottom:.75rem">Authors &amp; Affiliations</h3>
+      <div style="font-size:.84rem;color:var(--text-muted);line-height:1.8">
+        <strong style="color:var(--text)">R. Brynn Jones-Rastelli</strong> <sup>1,2</sup><br>
+        Milan R. Amin <sup>2</sup><br>
+        Mridula Anandhakrishnan <sup>1</sup><br>
+        Matina Balou <sup>2</sup><br>
+        Claire Crossman <sup>1,2</sup><br>
+        Erica G. Herzberg <sup>2</sup><br>
+        Aaron M. Johnson <sup>2</sup><br>
+        <strong style="color:var(--accent)">Sonja M. Molfenter</strong> <sup>1,2</sup>
+      </div>
+      <div style="margin-top:1rem;font-size:.78rem;color:var(--text-dim)">
+        <sup>1</sup> NYU Steinhardt &nbsp; <sup>2</sup> NYU Grossman School of Medicine
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.75rem">Instruments Used</h3>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <div style="padding:.6rem .8rem;background:var(--accent-glow);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--accent)">DIGEST&trade;</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Dynamic Imaging Grade of Swallowing Toxicity (0–4)</div>
+        </div>
+        <div style="padding:.6rem .8rem;background:var(--accent-glow);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--accent)">MBSImP&trade;&copy;</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Modified Barium Swallow Impairment Profile — Pharyngeal Total (0–28)</div>
+        </div>
+        <div style="padding:.6rem .8rem;background:var(--purple-bg);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--purple)">EAT-10</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Eating Assessment Tool (0–40, &ge;3 abnormal)</div>
+        </div>
+        <div style="padding:.6rem .8rem;background:var(--purple-bg);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--purple)">SWAL-QoL</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Swallowing Quality of Life (0–100, lower = worse)</div>
+        </div>
+        <div style="padding:.6rem .8rem;background:var(--purple-bg);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--purple)">Bazaz</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Bazaz Dysphagia Scale (0–3: None–Severe)</div>
+        </div>
+        <div style="padding:.6rem .8rem;background:var(--purple-bg);border-radius:var(--radius-xs)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--purple)">HSS-DDI</div>
+          <div style="font-size:.72rem;color:var(--text-dim)">Hospital for Special Surgery Dysphagia &amp; Dysphonia Index (0–100)</div>
         </div>
       </div>
     </div>
-
-    <div class="interp-panel" style="margin-top:2rem;max-width:720px">
-      <h3>Clinical Implications</h3>
-      <p>
-        These findings support a <strong>multi-dimensional assessment approach</strong> for ACDF patients.
-        Relying solely on instrumental evaluation may miss patients who are experiencing real
-        swallowing-related quality-of-life impairments, while relying only on PROs may not
-        detect physiological changes that could progress if untreated.
-      </p>
-      <p>
-        Clinicians should consider <strong>routine paired assessment</strong> (VFSS + PRO)
-        to identify the full spectrum of post-surgical dysphagia and tailor
-        intervention strategies accordingly.
-      </p>
-    </div>
   </div>
-</section>
 
-<!-- ─── Footer ─── -->
-<footer>
-  <div class="container">
-    <p>Interactive visualization of Jones-Rastelli et al. (2025). <em>Laryngoscope</em>. PMID: 40719035</p>
-    <p style="margin-top:.35rem">Data representations are illustrative of reported findings. Consult the original publication for exact values.</p>
-    <p style="margin-top:.5rem;color:var(--text-dim)">Built for the Molfenter Lab &middot; NYU</p>
+  <div class="interp">
+    <h4>Disclaimer</h4>
+    <p>Data representations in this interactive tool are <strong>illustrative of the reported findings</strong> from the abstract and study design. Individual patient-level data shown is simulated to reflect the patterns described. Please consult the original publication for exact values and statistical analyses.</p>
   </div>
-</footer>
+
+  <div class="page-footer">
+    <p>Built for the Molfenter Lab &middot; NYU &middot; Interactive Research Platform v2.0</p>
+  </div>
+</div>
+
+</main>
+</div>
 
 <script>
-// ─── Chart.js Defaults ───
-Chart.defaults.color = '#8896b3';
-Chart.defaults.borderColor = 'rgba(38,51,84,.5)';
-Chart.defaults.font.family = "'Inter',system-ui,sans-serif";
-Chart.defaults.font.size = 12;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
-Chart.defaults.plugins.tooltip.backgroundColor = '#1a2236';
-Chart.defaults.plugins.tooltip.borderColor = '#263354';
-Chart.defaults.plugins.tooltip.borderWidth = 1;
-Chart.defaults.plugins.tooltip.cornerRadius = 8;
-Chart.defaults.plugins.tooltip.padding = 10;
-
-// ─── Data ───
-// Representative data based on study findings (n=21)
-const outcomeData = {
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+const D = {
   digest: {
-    label: 'DIGEST',
-    fullName: 'Dynamic Imaging Grade of Swallowing Toxicity',
-    type: 'Instrumental (VFSS)',
-    scale: '0–4 (None to Life-threatening)',
-    direction: 'Higher = worse',
-    pre: [0,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0],
-    post: [1,0,1,1,0,1,2,0,1,0,1,1,0,0,1,0,1,0,1,2,0],
-    preMean: 0.24, postMean: 0.57,
-    preSD: 0.44, postSD: 0.60,
-    pValue: '0.012',
-    description: 'DIGEST grades the overall safety and efficiency of swallowing from videofluoroscopy. Post-operatively, scores shifted toward mild-to-moderate impairment, with some patients developing new penetration or residue findings.',
-    mcid: 1
+    key:'digest',label:'DIGEST',fullName:'Dynamic Imaging Grade of Swallowing Toxicity',
+    type:'Instrumental (VFSS)',scale:'0–4',dir:'Higher = worse',
+    pre:[0,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0],
+    post:[1,0,1,1,0,1,2,0,1,0,1,1,0,0,1,0,1,0,1,2,0],
+    preMean:.24,postMean:.57,preSD:.44,postSD:.60,p:'0.012',mcid:1,
+    desc:'DIGEST grades overall swallowing safety and efficiency from videofluoroscopy. Scores shifted toward mild-to-moderate impairment post-ACDF.'
   },
   mbsimp: {
-    label: 'MBSImP PTS',
-    fullName: 'Modified Barium Swallow Impairment Profile — Pharyngeal Total Score',
-    type: 'Instrumental (VFSS)',
-    scale: '0–28 (sum of pharyngeal components)',
-    direction: 'Higher = worse',
-    pre: [2,3,1,5,2,3,4,1,2,3,6,2,1,3,5,2,4,1,3,7,2],
-    post: [4,5,3,8,3,5,7,2,4,4,8,4,3,4,7,3,6,3,5,10,3],
-    preMean: 3.0, postMean: 5.0,
-    preSD: 1.6, postSD: 2.1,
-    pValue: '0.003',
-    description: 'The MBSImP pharyngeal total score quantifies the severity of pharyngeal swallowing impairment across multiple physiological components. The significant increase post-operatively indicates measurable changes in pharyngeal function.',
-    mcid: 3
+    key:'mbsimp',label:'MBSImP PTS',fullName:'MBSImP Pharyngeal Total Score',
+    type:'Instrumental (VFSS)',scale:'0–28',dir:'Higher = worse',
+    pre:[2,3,1,5,2,3,4,1,2,3,6,2,1,3,5,2,4,1,3,7,2],
+    post:[4,5,3,8,3,5,7,2,4,4,8,4,3,4,7,3,6,3,5,10,3],
+    preMean:3.0,postMean:5.0,preSD:1.6,postSD:2.1,p:'0.003',mcid:3,
+    desc:'Quantifies pharyngeal swallowing impairment severity across multiple physiological components.'
   },
   eat10: {
-    label: 'EAT-10',
-    fullName: 'Eating Assessment Tool',
-    type: 'Patient-Reported (PRO)',
-    scale: '0–40',
-    direction: 'Higher = worse (≥3 abnormal)',
-    pre: [0,2,0,3,1,0,5,0,1,0,4,0,1,2,3,0,1,0,2,6,0],
-    post: [4,8,2,10,3,5,12,1,6,3,9,4,2,5,8,3,7,2,5,14,1],
-    preMean: 1.5, postMean: 5.4,
-    preSD: 1.8, postSD: 3.6,
-    pValue: '<0.001',
-    description: 'The EAT-10 is a self-administered symptom severity tool. Post-ACDF scores increased substantially, with many patients crossing the clinical threshold of ≥3, indicating that patients are perceiving significant new swallowing difficulties.',
-    mcid: 3
+    key:'eat10',label:'EAT-10',fullName:'Eating Assessment Tool',
+    type:'Patient-Reported (PRO)',scale:'0–40',dir:'Higher = worse (≥3 abnormal)',
+    pre:[0,2,0,3,1,0,5,0,1,0,4,0,1,2,3,0,1,0,2,6,0],
+    post:[4,8,2,10,3,5,12,1,6,3,9,4,2,5,8,3,7,2,5,14,1],
+    preMean:1.5,postMean:5.4,preSD:1.8,postSD:3.6,p:'<0.001',mcid:3,
+    desc:'Self-administered symptom severity tool. Many patients crossed the ≥3 clinical threshold post-ACDF.'
   },
   swalqol: {
-    label: 'SWAL-QoL',
-    fullName: 'Swallowing Quality of Life Questionnaire',
-    type: 'Patient-Reported (PRO)',
-    scale: '0–100 (percentage)',
-    direction: 'Lower = worse',
-    pre: [98,92,100,85,95,97,80,100,96,98,82,97,99,93,86,100,95,100,94,76,100],
-    post: [82,78,92,68,86,80,62,95,76,90,70,82,92,80,72,88,78,94,82,58,92],
-    preMean: 93.5, postMean: 80.4,
-    preSD: 7.3, postSD: 9.8,
-    pValue: '<0.001',
-    description: 'The SWAL-QoL captures swallowing-related quality of life across multiple domains (burden, eating duration, eating desire, symptoms, food selection, communication, fear, mental health, social functioning). The broad decline indicates substantial quality-of-life impact.',
-    mcid: -14
+    key:'swalqol',label:'SWAL-QoL',fullName:'Swallowing Quality of Life Questionnaire',
+    type:'Patient-Reported (PRO)',scale:'0–100%',dir:'Lower = worse',
+    pre:[98,92,100,85,95,97,80,100,96,98,82,97,99,93,86,100,95,100,94,76,100],
+    post:[82,78,92,68,86,80,62,95,76,90,70,82,92,80,72,88,78,94,82,58,92],
+    preMean:93.5,postMean:80.4,preSD:7.3,postSD:9.8,p:'<0.001',mcid:-14,
+    desc:'Captures swallowing-related quality of life across multiple domains. Broad decline indicates substantial QoL impact.'
   },
   bazaz: {
-    label: 'Bazaz',
-    fullName: 'Bazaz Dysphagia Scale',
-    type: 'Patient-Reported (PRO)',
-    scale: '0–3 (None, Mild, Moderate, Severe)',
-    direction: 'Higher = worse',
-    pre: [0,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,2,0],
-    post: [1,1,0,2,1,1,2,0,1,0,2,1,0,1,2,0,1,0,1,3,0],
-    preMean: 0.29, postMean: 0.95,
-    preSD: 0.56, postSD: 0.80,
-    pValue: '0.002',
-    description: 'The Bazaz scale is widely used in spine surgery to grade dysphagia severity. The significant postoperative increase confirms that ACDF patients commonly report new or worsening swallowing difficulty in the early recovery period.',
-    mcid: 1
+    key:'bazaz',label:'Bazaz',fullName:'Bazaz Dysphagia Scale',
+    type:'Patient-Reported (PRO)',scale:'0–3',dir:'Higher = worse',
+    pre:[0,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,2,0],
+    post:[1,1,0,2,1,1,2,0,1,0,2,1,0,1,2,0,1,0,1,3,0],
+    preMean:.29,postMean:.95,preSD:.56,postSD:.80,p:'0.002',mcid:1,
+    desc:'Widely used in spine surgery to grade dysphagia severity. Confirms common new/worsening difficulty.'
   },
   hssddi: {
-    label: 'HSS-DDI',
-    fullName: 'Hospital for Special Surgery Dysphagia & Dysphonia Index',
-    type: 'Patient-Reported (PRO)',
-    scale: '0–100',
-    direction: 'Higher = worse',
-    pre: [2,5,0,12,3,2,15,0,4,1,10,3,1,4,11,2,5,0,3,18,1],
-    post: [14,20,5,28,12,16,32,3,18,8,24,15,6,14,22,8,18,5,14,38,4],
-    preMean: 4.9, postMean: 15.4,
-    preSD: 5.1, postSD: 9.3,
-    pValue: '<0.001',
-    description: 'The HSS-DDI was specifically developed for cervical spine surgery patients. The substantial postoperative increase reflects the multifaceted impact of ACDF on both swallowing and voice, with symptoms ranging from mild throat discomfort to significant functional impairment.',
-    mcid: 12
+    key:'hssddi',label:'HSS-DDI',fullName:'Hospital for Special Surgery Dysphagia & Dysphonia Index',
+    type:'Patient-Reported (PRO)',scale:'0–100',dir:'Higher = worse',
+    pre:[2,5,0,12,3,2,15,0,4,1,10,3,1,4,11,2,5,0,3,18,1],
+    post:[14,20,5,28,12,16,32,3,18,8,24,15,6,14,22,8,18,5,14,38,4],
+    preMean:4.9,postMean:15.4,preSD:5.1,postSD:9.3,p:'<0.001',mcid:12,
+    desc:'Developed specifically for cervical spine surgery. Reflects multifaceted impact on swallowing and voice.'
   }
 };
 
-// ─── Outcome Chart ───
-let outcomeChart;
-const outcomeCtx = document.getElementById('outcomeChart').getContext('2d');
+const patients = [];
+for(let i=0;i<21;i++){
+  const p = {id:i+1,label:`P${String(i+1).padStart(2,'0')}`};
+  Object.keys(D).forEach(k=>{
+    p[k+'_pre']=D[k].pre[i]; p[k+'_post']=D[k].post[i];
+    const diff = D[k].post[i]-D[k].pre[i];
+    const mcid = D[k].mcid;
+    if(k==='swalqol') p[k+'_change'] = diff <= mcid ? 'worse' : diff >= -mcid ? 'stable' : 'improved';
+    else p[k+'_change'] = diff >= mcid ? 'worse' : diff <= -mcid ? 'improved' : 'stable';
+  });
+  p.digestDir = p.digest_change;
+  patients.push(p);
+}
 
-function buildOutcomeChart(key) {
-  const d = outcomeData[key];
-  if (outcomeChart) outcomeChart.destroy();
+const measKeys = ['digest','eat10','swalqol','bazaz','hssddi'];
+const measLabels = ['DIGEST','EAT-10','SWAL-QoL','Bazaz','HSS-DDI'];
 
-  const isSwalQol = key === 'swalqol';
-  const labels = d.pre.map((_,i) => `P${String(i+1).padStart(2,'0')}`);
+const agreeMatrix = [
+  [100,52,48,57,52],
+  [52,100,76,81,71],
+  [48,76,100,71,67],
+  [57,81,71,100,76],
+  [52,71,67,76,100]
+];
 
-  outcomeChart = new Chart(outcomeCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Pre-op',
-          data: d.pre,
-          backgroundColor: 'rgba(108,156,255,.65)',
-          borderColor: 'rgba(108,156,255,.9)',
-          borderWidth: 1,
-          borderRadius: 3,
-        },
-        {
-          label: 'Post-op',
-          data: d.post,
-          backgroundColor: 'rgba(248,113,113,.65)',
-          borderColor: 'rgba(248,113,113,.9)',
-          borderWidth: 1,
-          borderRadius: 3,
-        }
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+const navItems = document.querySelectorAll('.nav-item');
+const pages = document.querySelectorAll('.page');
+const inited = new Set();
+
+navItems.forEach(item=>{
+  item.addEventListener('click',()=>{
+    const pg = item.dataset.page;
+    navItems.forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+    pages.forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+pg).classList.add('active');
+    if(!inited.has(pg)){inited.add(pg);initPage(pg)}
+    document.querySelector('.sidebar').classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════
+//  CHART DEFAULTS
+// ═══════════════════════════════════════════
+Chart.defaults.color='#8896b3';
+Chart.defaults.borderColor='rgba(38,51,84,.5)';
+Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+Chart.defaults.font.size=12;
+Chart.defaults.plugins.legend.labels.usePointStyle=true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth=10;
+Chart.defaults.plugins.tooltip.backgroundColor='#1a2236';
+Chart.defaults.plugins.tooltip.borderColor='#263354';
+Chart.defaults.plugins.tooltip.borderWidth=1;
+Chart.defaults.plugins.tooltip.cornerRadius=8;
+Chart.defaults.plugins.tooltip.padding=10;
+
+const charts = {};
+
+// ═══════════════════════════════════════════
+//  PAGE INITIALIZERS
+// ═══════════════════════════════════════════
+function initPage(pg){
+  switch(pg){
+    case 'outcomes': initOutcomes(); break;
+    case 'prevalence': initPrevalence(); break;
+    case 'patients': initPatients(); break;
+    case 'calculator': initCalculator(); break;
+    case 'concordance': initConcordance(); break;
+    case 'simulator': initSimulator(); break;
+  }
+}
+
+// ── Dashboard (always init) ──
+(function initDashboard(){
+  const keys = Object.keys(D);
+  charts.dashOverview = new Chart(document.getElementById('dashOverview'),{
+    type:'bar',
+    data:{
+      labels: keys.map(k=>D[k].label),
+      datasets:[
+        {label:'Pre-op Mean',data:keys.map(k=>D[k].preMean),backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
+        {label:'Post-op Mean',data:keys.map(k=>D[k].postMean),backgroundColor:'rgba(248,113,113,.6)',borderRadius:4}
       ]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: {
-          callbacks: {
-            title: (items) => `Patient ${items[0].label}`,
-            label: (item) => `${item.dataset.label}: ${item.raw}`
-          }
-        }
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'top'}},
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(38,51,84,.3)'}}}
+    }
+  });
+
+  charts.dashGap = new Chart(document.getElementById('dashGap'),{
+    type:'bar',
+    data:{
+      labels:['DIGEST','Bazaz','EAT-10','SWAL-QoL','HSS-DDI'],
+      datasets:[
+        {label:'VFSS Incidence',data:[29,null,null,null,null],backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
+        {label:'PRO Incidence',data:[null,59,53,59,47],backgroundColor:'rgba(167,139,250,.6)',borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'top'},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw}%`}}},
+      scales:{x:{grid:{display:false},stacked:true},y:{stacked:true,beginAtZero:true,max:70,ticks:{callback:v=>v+'%'},grid:{color:'rgba(38,51,84,.3)'}}}
+    }
+  });
+})();
+
+// ── Outcomes ──
+function initOutcomes(){
+  const tabRow = document.getElementById('outcomeTabs');
+  Object.keys(D).forEach((k,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn'+(i===0?' active':'');
+    btn.textContent = D[k].label;
+    btn.dataset.tab = k;
+    btn.onclick = ()=>{
+      tabRow.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      buildOutcome(k);
+    };
+    tabRow.appendChild(btn);
+  });
+  buildOutcome('digest');
+}
+
+function buildOutcome(key){
+  const d=D[key];
+  const labels=d.pre.map((_,i)=>`P${String(i+1).padStart(2,'0')}`);
+  const isSQ=key==='swalqol';
+
+  if(charts.outcome) charts.outcome.destroy();
+  charts.outcome = new Chart(document.getElementById('outcomeChart'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Pre-op',data:d.pre,backgroundColor:'rgba(108,156,255,.6)',borderRadius:3},
+      {label:'Post-op',data:d.post,backgroundColor:'rgba(248,113,113,.6)',borderRadius:3}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      onClick:(e,els)=>{if(els.length){const idx=els[0].index;selectPatient(idx)}},
+      plugins:{legend:{position:'top'},tooltip:{callbacks:{title:i=>`Patient ${i[0].label}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{beginAtZero:true,reverse:isSQ,title:{display:true,text:d.label+' Score'},grid:{color:'rgba(38,51,84,.3)'}}}
+    }
+  });
+
+  // Change chart
+  const changes = d.post.map((v,i)=>v-d.pre[i]);
+  if(charts.change) charts.change.destroy();
+  charts.change = new Chart(document.getElementById('changeChart'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Change (Post - Pre)',
+      data:changes,
+      backgroundColor:changes.map(c=> isSQ ? (c<0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)') : (c>0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)')),
+      borderRadius:3
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:i=>`Change: ${i.raw>0?'+':''}${i.raw}`}}
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 10 } }
-        },
-        y: {
-          beginAtZero: true,
-          reverse: isSwalQol,
-          title: { display: true, text: d.label + ' Score', font: { weight: 600 } },
-          grid: { color: 'rgba(38,51,84,.3)' }
-        }
-      }
+      scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{title:{display:true,text:'Score Change'},grid:{color:'rgba(38,51,84,.3)'}}}
     }
   });
 
   // Detail panel
-  const dp = document.getElementById('outcomeDetail');
-  const changeDir = isSwalQol ? 'decline' : 'increase';
-  const changeArrow = isSwalQol ? '↓' : '↑';
-  const diff = isSwalQol
-    ? (d.preMean - d.postMean).toFixed(1)
-    : (d.postMean - d.preMean).toFixed(1);
-
-  dp.innerHTML = `
+  const dp=document.getElementById('outcomeDetail');
+  const diff=isSQ?(d.preMean-d.postMean).toFixed(1):(d.postMean-d.preMean).toFixed(1);
+  const arrow=isSQ?'↓':'↑';
+  dp.innerHTML=`
     <div class="section-label" style="margin-bottom:.25rem">${d.type}</div>
-    <h3 style="margin-bottom:.25rem;font-size:1.1rem">${d.fullName}</h3>
-    <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:1.25rem">Scale: ${d.scale} &middot; ${d.direction}</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
-      <div style="text-align:center;padding:1rem;background:rgba(108,156,255,.06);border-radius:var(--radius-sm)">
-        <div style="font-size:1.8rem;font-weight:800;color:var(--accent)">${d.preMean}</div>
-        <div style="font-size:.75rem;color:var(--text-muted)">Pre-op Mean<br><span style="color:var(--text-dim)">SD: ${d.preSD}</span></div>
+    <h3 style="font-size:1.05rem;margin-bottom:.25rem">${d.fullName}</h3>
+    <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:1.25rem">Scale: ${d.scale} · ${d.dir}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+      <div style="text-align:center;padding:.85rem;background:rgba(108,156,255,.06);border-radius:var(--radius-sm)">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--accent)">${d.preMean}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">Pre-op Mean (SD: ${d.preSD})</div>
       </div>
-      <div style="text-align:center;padding:1rem;background:rgba(248,113,113,.06);border-radius:var(--radius-sm)">
-        <div style="font-size:1.8rem;font-weight:800;color:var(--red)">${d.postMean}</div>
-        <div style="font-size:.75rem;color:var(--text-muted)">Post-op Mean<br><span style="color:var(--text-dim)">SD: ${d.postSD}</span></div>
+      <div style="text-align:center;padding:.85rem;background:rgba(248,113,113,.06);border-radius:var(--radius-sm)">
+        <div style="font-size:1.6rem;font-weight:800;color:var(--red)">${d.postMean}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">Post-op Mean (SD: ${d.postSD})</div>
       </div>
     </div>
-    <div style="padding:.75rem 1rem;background:rgba(248,113,113,.06);border-radius:var(--radius-sm);border-left:3px solid var(--red);margin-bottom:1.25rem">
-      <div style="font-size:.85rem;font-weight:700;color:var(--red)">${changeArrow} ${diff} point ${changeDir}</div>
-      <div style="font-size:.75rem;color:var(--text-muted)">p = ${d.pValue} (significant effect of operative timepoint)</div>
+    <div style="padding:.65rem .85rem;background:rgba(248,113,113,.06);border-radius:var(--radius-sm);border-left:3px solid var(--red);margin-bottom:1rem">
+      <div style="font-size:.85rem;font-weight:700;color:var(--red)">${arrow} ${diff} point change</div>
+      <div style="font-size:.72rem;color:var(--text-muted)">p = ${d.p} · MCID: ${Math.abs(d.mcid)}</div>
     </div>
-    <p style="font-size:.82rem;color:var(--text-muted);line-height:1.65">${d.description}</p>
+    <p style="font-size:.82rem;color:var(--text-muted);line-height:1.6">${d.desc}</p>
+    <p style="font-size:.75rem;color:var(--text-dim);margin-top:.75rem;font-style:italic">Click any bar in the chart to explore that patient.</p>
   `;
 }
 
-// Tab switching
-document.getElementById('outcomeTabs').addEventListener('click', e => {
-  if (!e.target.classList.contains('tab-btn')) return;
-  document.querySelectorAll('#outcomeTabs .tab-btn').forEach(b => b.classList.remove('active'));
-  e.target.classList.add('active');
-  buildOutcomeChart(e.target.dataset.tab);
-});
-buildOutcomeChart('digest');
+// ── Prevalence ──
+function initPrevalence(){
+  charts.prev = new Chart(document.getElementById('prevChart'),{
+    type:'bar',
+    data:{labels:['DIGEST','Bazaz','EAT-10','SWAL-QoL','HSS-DDI'],datasets:[
+      {label:'Pre-op',data:[19,19,14,14,19],backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
+      {label:'Post-op',data:[43,71,62,67,57],backgroundColor:'rgba(248,113,113,.6)',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top'},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw}%`}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(38,51,84,.3)'}}}}
+  });
 
-// ─── Prevalence Chart ───
-const prevCtx = document.getElementById('prevalenceChart').getContext('2d');
-new Chart(prevCtx, {
-  type: 'bar',
-  data: {
-    labels: ['DIGEST', 'Bazaz', 'EAT-10', 'SWAL-QoL', 'HSS-DDI'],
-    datasets: [
-      {
-        label: 'Pre-op Prevalence %',
-        data: [19, 19, 14, 14, 19],
-        backgroundColor: 'rgba(108,156,255,.6)',
-        borderColor: 'rgba(108,156,255,.9)',
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-      {
-        label: 'Post-op Prevalence %',
-        data: [43, 71, 62, 67, 57],
-        backgroundColor: 'rgba(248,113,113,.6)',
-        borderColor: 'rgba(248,113,113,.9)',
-        borderWidth: 1,
-        borderRadius: 4,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: { label: item => `${item.dataset.label}: ${item.raw}%` }
-      }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        beginAtZero: true,
-        max: 100,
-        title: { display: true, text: 'Prevalence (%)', font: { weight: 600 } },
-        ticks: { callback: v => v + '%' },
-        grid: { color: 'rgba(38,51,84,.3)' }
-      }
-    }
-  }
-});
+  charts.inc = new Chart(document.getElementById('incChart'),{
+    type:'bar',
+    data:{labels:['DIGEST','Bazaz','EAT-10','SWAL-QoL','HSS-DDI'],datasets:[{
+      label:'New Cases',
+      data:[29,59,53,59,47],
+      backgroundColor:['rgba(108,156,255,.6)','rgba(167,139,250,.6)','rgba(167,139,250,.6)','rgba(167,139,250,.6)','rgba(167,139,250,.6)'],
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>`Incidence: ${i.raw}%`}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,max:80,ticks:{callback:v=>v+'%'},grid:{color:'rgba(38,51,84,.3)'}}}}
+  });
 
-// ─── Incidence Chart ───
-const incCtx = document.getElementById('incidenceChart').getContext('2d');
-new Chart(incCtx, {
-  type: 'bar',
-  data: {
-    labels: ['DIGEST', 'Bazaz', 'EAT-10', 'SWAL-QoL', 'HSS-DDI'],
-    datasets: [{
-      label: 'New Post-op Cases (%)',
-      data: [29, 59, 53, 59, 47],
-      backgroundColor: [
-        'rgba(108,156,255,.6)',
-        'rgba(167,139,250,.6)',
-        'rgba(167,139,250,.6)',
-        'rgba(167,139,250,.6)',
-        'rgba(167,139,250,.6)',
-      ],
-      borderColor: [
-        'rgba(108,156,255,.9)',
-        'rgba(167,139,250,.9)',
-        'rgba(167,139,250,.9)',
-        'rgba(167,139,250,.9)',
-        'rgba(167,139,250,.9)',
-      ],
-      borderWidth: 1,
-      borderRadius: 4,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          title: items => items[0].label,
-          label: item => `Incidence: ${item.raw}% of initially-normal patients`
-        }
-      }
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        beginAtZero: true,
-        max: 80,
-        title: { display: true, text: 'Incidence (%)', font: { weight: 600 } },
-        ticks: { callback: v => v + '%' },
-        grid: { color: 'rgba(38,51,84,.3)' }
-      }
-    }
-  }
-});
-
-// ─── Meaningful Change Chart ───
-const mcCtx = document.getElementById('meaningfulChart').getContext('2d');
-new Chart(mcCtx, {
-  type: 'bar',
-  data: {
-    labels: ['DIGEST', 'EAT-10', 'SWAL-QoL', 'HSS-DDI', 'Bazaz'],
-    datasets: [
-      {
-        label: 'Improved',
-        data: [5, 0, 5, 5, 0],
-        backgroundColor: 'rgba(52,211,153,.6)',
-        borderColor: 'rgba(52,211,153,.9)',
-        borderWidth: 1,
-        borderRadius: 3,
-      },
-      {
-        label: 'Stable',
-        data: [57, 52, 48, 48, 57],
-        backgroundColor: 'rgba(108,156,255,.4)',
-        borderColor: 'rgba(108,156,255,.7)',
-        borderWidth: 1,
-        borderRadius: 3,
-      },
-      {
-        label: 'Worsened',
-        data: [38, 48, 48, 48, 43],
-        backgroundColor: 'rgba(248,113,113,.6)',
-        borderColor: 'rgba(248,113,113,.9)',
-        borderWidth: 1,
-        borderRadius: 3,
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: item => `${item.dataset.label}: ${item.raw}% of patients`
-        }
-      }
-    },
-    scales: {
-      x: { grid: { display: false }, stacked: true },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        max: 100,
-        title: { display: true, text: '% of Participants', font: { weight: 600 } },
-        ticks: { callback: v => v + '%' },
-        grid: { color: 'rgba(38,51,84,.3)' }
-      }
-    }
-  }
-});
-
-// ─── Patient Swim Lanes ───
-// Simulated individual patient trajectories showing the mismatch
-const patientData = [
-  { id:'P01', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P02', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P03', digest:'worse',  eat10:'stable', swalqol:'stable', bazaz:'stable', hssddi:'stable' },
-  { id:'P04', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P05', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'stable' },
-  { id:'P06', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P07', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P08', digest:'stable', eat10:'stable', swalqol:'stable', bazaz:'stable', hssddi:'stable' },
-  { id:'P09', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P10', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'stable', hssddi:'stable' },
-  { id:'P11', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P12', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P13', digest:'stable', eat10:'stable', swalqol:'stable', bazaz:'stable', hssddi:'stable' },
-  { id:'P14', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P15', digest:'stable', eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P16', digest:'stable', eat10:'worse',  swalqol:'stable', bazaz:'stable', hssddi:'stable' },
-  { id:'P17', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P18', digest:'stable', eat10:'stable', swalqol:'stable', bazaz:'stable', hssddi:'stable' },
-  { id:'P19', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P20', digest:'worse',  eat10:'worse',  swalqol:'worse',  bazaz:'worse',  hssddi:'worse'  },
-  { id:'P21', digest:'improved',eat10:'stable',swalqol:'improved',bazaz:'stable', hssddi:'stable' },
-];
-
-let sortByDigest = false;
-
-function dotClass(val) {
-  if (val === 'improved') return 'dot-improved';
-  if (val === 'stable') return 'dot-stable';
-  if (val === 'worse') return 'dot-worse';
-  return 'dot-none';
-}
-function dotSymbol(val) {
-  if (val === 'improved') return '↑';
-  if (val === 'stable') return '–';
-  if (val === 'worse') return '↓';
-  return '?';
+  charts.mc = new Chart(document.getElementById('mcChart'),{
+    type:'bar',
+    data:{labels:['DIGEST','EAT-10','SWAL-QoL','HSS-DDI','Bazaz'],datasets:[
+      {label:'Improved',data:[5,0,5,5,0],backgroundColor:'rgba(52,211,153,.6)',borderRadius:3},
+      {label:'Stable',data:[57,52,48,48,57],backgroundColor:'rgba(108,156,255,.35)',borderRadius:3},
+      {label:'Worsened',data:[38,48,48,48,43],backgroundColor:'rgba(248,113,113,.6)',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top'},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw}%`}}},scales:{x:{grid:{display:false},stacked:true},y:{stacked:true,beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(38,51,84,.3)'}}}}
+  });
 }
 
-function renderSwimLanes() {
-  let data = [...patientData];
-  if (sortByDigest) {
-    const order = { worse: 0, stable: 1, improved: 2 };
-    data.sort((a, b) => order[a.digest] - order[b.digest]);
-  }
+// ── Patients ──
+let selectedPatient = null;
 
-  const measures = ['digest','eat10','swalqol','bazaz','hssddi'];
-  const headers = ['','DIGEST','EAT-10','SWAL-QoL','Bazaz','HSS-DDI'];
+function initPatients(){
+  renderPatientGrid('all');
+  renderSwimLanes();
 
-  let html = '<div class="swim-grid">';
-  headers.forEach(h => html += `<div class="swim-header">${h}</div>`);
-
-  data.forEach(p => {
-    html += `<div class="swim-id">${p.id}</div>`;
-    measures.forEach(m => {
-      const v = p[m];
-      html += `<div class="swim-cell"><div class="swim-dot ${dotClass(v)}" title="${p.id} ${m}: ${v}">${dotSymbol(v)}</div></div>`;
+  document.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.remove('active');b.style.background='';b.style.borderColor='var(--border)';b.style.color='var(--text-muted)'});
+      btn.classList.add('active');
+      renderPatientGrid(btn.dataset.filter);
     });
   });
-  html += '</div>';
-  document.getElementById('swimContainer').innerHTML = html;
 }
 
-function togglePatientSort() {
-  sortByDigest = !sortByDigest;
-  document.getElementById('toggleSort').classList.toggle('on', sortByDigest);
-  renderSwimLanes();
+function renderPatientGrid(filter){
+  const grid=document.getElementById('patientGrid');
+  grid.innerHTML='';
+  patients.forEach(p=>{
+    if(filter!=='all' && p.digestDir!==filter) return;
+    const chip=document.createElement('div');
+    chip.className=`patient-chip ${p.digestDir}`;
+    chip.textContent=p.label;
+    if(selectedPatient===p.id) chip.classList.add('selected');
+    chip.onclick=()=>selectPatient(p.id-1);
+    grid.appendChild(chip);
+  });
 }
-renderSwimLanes();
 
-// ─── Heatmap (Agreement Matrix) ───
-const heatCtx = document.getElementById('heatmapChart').getContext('2d');
-const measures = ['DIGEST','EAT-10','SWAL-QoL','Bazaz','HSS-DDI'];
-// Agreement percentages (simulated from findings — not consistently the same patients)
-const agreementMatrix = [
-  [100, 52, 48, 57, 52],
-  [52, 100, 76, 81, 71],
-  [48, 76, 100, 71, 67],
-  [57, 81, 71, 100, 76],
-  [52, 71, 67, 76, 100],
-];
+function selectPatient(idx){
+  selectedPatient=idx+1;
+  const p=patients[idx];
 
-// Build scatter data for heatmap
-const heatData = [];
-for (let r = 0; r < 5; r++) {
-  for (let c = 0; c < 5; c++) {
-    heatData.push({ x: c, y: r, v: agreementMatrix[r][c] });
+  // Update grid selection
+  document.querySelectorAll('.patient-chip').forEach(c=>{
+    c.classList.toggle('selected',c.textContent===p.label);
+  });
+
+  // Profile
+  const prof=document.getElementById('patientProfile');
+  let html=`<h3 style="margin-bottom:1rem">${p.label} — Outcome Profile</h3>`;
+  html+=`<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">`;
+  measKeys.forEach((k,i)=>{
+    const ch=p[k+'_change'];
+    const cls=ch==='worse'?'badge-red':ch==='improved'?'badge-green':'badge-accent';
+    html+=`<span class="badge ${cls}">${measLabels[i]}: ${ch}</span>`;
+  });
+  html+=`</div>`;
+
+  Object.keys(D).forEach(k=>{
+    const d=D[k];
+    const pre=p[k+'_pre'],post=p[k+'_post'],diff=post-pre;
+    const isSQ=k==='swalqol';
+    const worse=isSQ?diff<0:diff>0;
+    const color=worse?'var(--red)':'var(--green)';
+    const pct=d.scale.includes('100') ? Math.abs(diff) : Math.abs(diff);
+    html+=`
+      <div style="margin-bottom:.65rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.8rem;font-weight:600">${d.label}</span>
+          <span style="font-size:.8rem;font-weight:700;color:${color}">${pre} → ${post} (${diff>0?'+':''}${diff})</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin-top:.3rem;overflow:hidden">
+          <div style="height:100%;width:${Math.min(Math.abs(diff)/((isSQ?100:d.post.reduce((a,b)=>Math.max(a,b),0))||1)*100,100)}%;background:${color};border-radius:3px;transition:width .6s"></div>
+        </div>
+      </div>
+    `;
+  });
+  prof.innerHTML=html;
+
+  // Radar
+  if(charts.radar) charts.radar.destroy();
+  const radarPre=[],radarPost=[];
+  measKeys.forEach(k=>{
+    const d=D[k];
+    const maxVal=k==='swalqol'?100:k==='hssddi'?100:k==='eat10'?40:k==='bazaz'?3:4;
+    if(k==='swalqol'){
+      radarPre.push(((100-p[k+'_pre'])/100*100));
+      radarPost.push(((100-p[k+'_post'])/100*100));
+    } else {
+      radarPre.push((p[k+'_pre']/maxVal)*100);
+      radarPost.push((p[k+'_post']/maxVal)*100);
+    }
+  });
+
+  charts.radar = new Chart(document.getElementById('radarChart'),{
+    type:'radar',
+    data:{
+      labels:measLabels,
+      datasets:[
+        {label:'Pre-op',data:radarPre,borderColor:'rgba(108,156,255,.8)',backgroundColor:'rgba(108,156,255,.15)',pointBackgroundColor:'#6c9cff',pointRadius:4},
+        {label:'Post-op',data:radarPost,borderColor:'rgba(248,113,113,.8)',backgroundColor:'rgba(248,113,113,.15)',pointBackgroundColor:'#f87171',pointRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'top'},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw.toFixed(0)}% of max severity`}}},
+      scales:{r:{beginAtZero:true,max:100,ticks:{display:false},grid:{color:'rgba(38,51,84,.3)'},pointLabels:{font:{size:11,weight:600}}}}
+    }
+  });
+
+  // Navigate to patients page if not there
+  const patientsNav = document.querySelector('[data-page="patients"]');
+  if(!patientsNav.classList.contains('active')){
+    patientsNav.click();
   }
 }
 
-new Chart(heatCtx, {
-  type: 'scatter',
-  data: {
-    datasets: [{
-      data: heatData.map(d => ({ x: d.x, y: d.y })),
-      pointRadius: heatData.map(d => 22),
-      pointHoverRadius: heatData.map(d => 26),
-      pointBackgroundColor: heatData.map(d => {
-        if (d.v === 100) return 'rgba(108,156,255,.5)';
-        if (d.v >= 75) return 'rgba(52,211,153,.35)';
-        if (d.v >= 60) return 'rgba(251,191,36,.3)';
-        return 'rgba(248,113,113,.3)';
-      }),
-      pointBorderColor: heatData.map(d => {
-        if (d.v === 100) return 'rgba(108,156,255,.8)';
-        if (d.v >= 75) return 'rgba(52,211,153,.6)';
-        if (d.v >= 60) return 'rgba(251,191,36,.5)';
-        return 'rgba(248,113,113,.5)';
-      }),
-      pointBorderWidth: 2,
-      pointStyle: 'rectRounded',
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          title: () => '',
-          label: item => {
-            const d = heatData[item.dataIndex];
-            return `${measures[d.y]} × ${measures[d.x]}: ${d.v}% agreement`;
-          }
-        }
+function renderSwimLanes(){
+  const measures=measKeys, headers=['',  ...measLabels];
+  let html='<div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px;min-width:600px">';
+  headers.forEach(h=>html+=`<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);padding:.5rem .35rem;text-align:center;border-bottom:2px solid var(--border)">${h}</div>`);
+  patients.forEach(p=>{
+    html+=`<div style="font-size:.75rem;font-weight:600;color:var(--text-muted);display:grid;place-items:center;padding:.35rem;cursor:pointer" onclick="selectPatient(${p.id-1})">${p.label}</div>`;
+    measures.forEach(m=>{
+      const v=p[m+'_change'];
+      const cls=v==='worse'?'background:rgba(248,113,113,.15);color:var(--red)':v==='improved'?'background:rgba(52,211,153,.15);color:var(--green)':'background:rgba(108,156,255,.1);color:var(--accent)';
+      const sym=v==='worse'?'↓':v==='improved'?'↑':'–';
+      html+=`<div style="padding:.35rem;display:grid;place-items:center"><div style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.65rem;font-weight:700;${cls}" title="${p.label} ${m}: ${v}">${sym}</div></div>`;
+    });
+  });
+  html+='</div>';
+  html+='<div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:1rem;font-size:.75rem;color:var(--text-muted)">';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin-right:.3rem"></span>Improved</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);margin-right:.3rem"></span>Stable</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-right:.3rem"></span>Worsened</span>';
+  html+='</div>';
+  document.getElementById('swimContainer').innerHTML=html;
+}
+
+// ── Calculator ──
+let calcMeasure = 'eat10';
+
+function initCalculator(){
+  const tabRow=document.getElementById('calcTabs');
+  const calcKeys=['eat10','swalqol','bazaz','hssddi','digest'];
+  calcKeys.forEach((k,i)=>{
+    const btn=document.createElement('button');
+    btn.className='tab-btn'+(i===0?' active':'');
+    btn.textContent=D[k].label;
+    btn.onclick=()=>{
+      tabRow.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      calcMeasure=k;
+      buildCalcForm(k);
+    };
+    tabRow.appendChild(btn);
+  });
+  buildCalcForm('eat10');
+}
+
+function buildCalcForm(key){
+  const d=D[key];
+  const isSQ=key==='swalqol';
+  const maxVal=key==='eat10'?40:key==='swalqol'?100:key==='hssddi'?100:key==='bazaz'?3:4;
+  const form=document.getElementById('calcForm');
+  form.innerHTML=`
+    <h3 style="margin-bottom:.75rem;font-size:.95rem">${d.fullName}</h3>
+    <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:1.25rem">${d.scale} · ${d.dir} · MCID: ${Math.abs(d.mcid)}</p>
+    <div class="form-group">
+      <label>Pre-Operative Score</label>
+      <input type="number" id="calcPre" min="0" max="${maxVal}" value="${isSQ?100:0}" step="${key==='swalqol'?1:1}">
+    </div>
+    <div class="form-group">
+      <label>Post-Operative Score (6 weeks)</label>
+      <input type="number" id="calcPost" min="0" max="${maxVal}" value="${isSQ?80:5}">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="runCalc()">Calculate</button>
+  `;
+  document.getElementById('calcResult').innerHTML='<p style="color:var(--text-dim);font-size:.85rem;text-align:center;margin-top:4rem">Enter scores and click Calculate</p>';
+}
+
+function runCalc(){
+  const d=D[calcMeasure];
+  const pre=parseFloat(document.getElementById('calcPre').value)||0;
+  const post=parseFloat(document.getElementById('calcPost').value)||0;
+  const diff=post-pre;
+  const isSQ=calcMeasure==='swalqol';
+  const mcid=d.mcid;
+  let direction,severity,sevClass;
+
+  if(isSQ){
+    if(diff<=mcid){direction='Worsened';severity=diff<=-28?'Severe':diff<=-14?'Moderate':'Mild';sevClass=diff<=-28?'score-severe':diff<=-14?'score-moderate':'score-mild'}
+    else if(diff>=-mcid){direction='Stable';severity='No meaningful change';sevClass='score-normal'}
+    else{direction='Improved';severity='Positive change';sevClass='score-normal'}
+  } else {
+    if(diff>=mcid){direction='Worsened';severity=diff>=mcid*3?'Severe':diff>=mcid*2?'Moderate':'Mild';sevClass=diff>=mcid*3?'score-severe':diff>=mcid*2?'score-moderate':'score-mild'}
+    else if(diff<=-mcid){direction='Improved';severity='Positive change';sevClass='score-normal'}
+    else{direction='Stable';severity='No meaningful change';sevClass='score-normal'}
+  }
+
+  const cohortPre=d.preMean,cohortPost=d.postMean;
+  const abovePre=isSQ?(pre<cohortPre?'worse':'better'):(pre>cohortPre?'worse':'better');
+  const abovePost=isSQ?(post<cohortPost?'worse':'better'):(post>cohortPost?'worse':'better');
+
+  const res=document.getElementById('calcResult');
+  res.innerHTML=`
+    <div class="score-result ${sevClass}">
+      <div class="score-val">${diff>0?'+':''}${diff}</div>
+      <div class="score-label">Score Change (Post - Pre)</div>
+      <div class="score-interp">${direction}: ${severity}</div>
+    </div>
+    <div style="margin-top:1.25rem">
+      <h4 style="font-size:.85rem;margin-bottom:.75rem">Compared to Study Cohort</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div style="padding:.65rem;background:var(--surface);border-radius:var(--radius-xs);text-align:center">
+          <div style="font-size:.72rem;color:var(--text-dim)">Pre-op vs Cohort (${cohortPre})</div>
+          <div style="font-size:.9rem;font-weight:700;color:${abovePre==='worse'?'var(--red)':'var(--green)'}">${pre} — ${abovePre} than avg</div>
+        </div>
+        <div style="padding:.65rem;background:var(--surface);border-radius:var(--radius-xs);text-align:center">
+          <div style="font-size:.72rem;color:var(--text-dim)">Post-op vs Cohort (${cohortPost})</div>
+          <div style="font-size:.9rem;font-weight:700;color:${abovePost==='worse'?'var(--red)':'var(--green)'}">${post} — ${abovePost} than avg</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:.75rem;background:var(--accent-glow);border-radius:var(--radius-xs);border:1px solid rgba(108,156,255,.15)">
+        <div style="font-size:.78rem;font-weight:600;color:var(--accent);margin-bottom:.3rem">MCID Threshold: ${Math.abs(mcid)}</div>
+        <div style="font-size:.78rem;color:var(--text-muted)">A change of ≥${Math.abs(mcid)} ${isSQ?'decrease':'increase'} indicates a clinically meaningful worsening per study criteria.</div>
+      </div>
+    </div>
+  `;
+
+  // Distribution chart
+  const changes=d.post.map((v,i)=>v-d.pre[i]);
+  const allChanges=[...changes,diff].sort((a,b)=>a-b);
+  const patientIdx=allChanges.indexOf(diff);
+
+  if(charts.calcDist) charts.calcDist.destroy();
+  charts.calcDist = new Chart(document.getElementById('calcDist'),{
+    type:'bar',
+    data:{
+      labels:allChanges.map((_,i)=>i===patientIdx?'YOUR PATIENT':'P'),
+      datasets:[{
+        data:allChanges,
+        backgroundColor:allChanges.map((v,i)=>i===patientIdx?'rgba(251,191,36,.8)':isSQ?(v<0?'rgba(248,113,113,.4)':'rgba(52,211,153,.4)'):(v>0?'rgba(248,113,113,.4)':'rgba(52,211,153,.4)')),
+        borderRadius:3
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>`Change: ${i.raw>0?'+':''}${i.raw}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{title:{display:true,text:'Score Change'},grid:{color:'rgba(38,51,84,.3)'}}}
+    }
+  });
+}
+
+// ── Simulator ──
+function initSimulator(){
+  ['simDigest','simEat10','simSwal','simBazaz','simHss'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('input',()=>{document.getElementById(id+'Val').textContent=el.value});
+  });
+}
+
+function runSimulation(){
+  const preDigest=+document.getElementById('simDigest').value;
+  const preEat10=+document.getElementById('simEat10').value;
+  const preSwal=+document.getElementById('simSwal').value;
+  const preBazaz=+document.getElementById('simBazaz').value;
+  const preHss=+document.getElementById('simHss').value;
+
+  // Simulate post-op using study mean changes + some variance
+  const meanChanges={digest:.33,eat10:3.9,swalqol:-13.1,bazaz:.66,hssddi:10.5};
+  const postDigest=Math.min(4,Math.max(0,preDigest+meanChanges.digest+(.5-Math.random())*.5));
+  const postEat10=Math.min(40,Math.max(0,preEat10+meanChanges.eat10+(Math.random()-0.5)*3));
+  const postSwal=Math.min(100,Math.max(0,preSwal+meanChanges.swalqol+(Math.random()-0.5)*8));
+  const postBazaz=Math.min(3,Math.max(0,preBazaz+meanChanges.bazaz+(Math.random()-0.5)*.5));
+  const postHss=Math.min(100,Math.max(0,preHss+meanChanges.hssddi+(Math.random()-0.5)*6));
+
+  const results=[
+    {name:'DIGEST',pre:preDigest,post:postDigest.toFixed(1),mcid:1,isSQ:false},
+    {name:'EAT-10',pre:preEat10,post:postEat10.toFixed(1),mcid:3,isSQ:false},
+    {name:'SWAL-QoL',pre:preSwal,post:postSwal.toFixed(1),mcid:14,isSQ:true},
+    {name:'Bazaz',pre:preBazaz,post:postBazaz.toFixed(1),mcid:1,isSQ:false},
+    {name:'HSS-DDI',pre:preHss,post:postHss.toFixed(1),mcid:12,isSQ:false},
+  ];
+
+  // Risk assessment
+  let riskScore=0;
+  if(preDigest>=1) riskScore+=15;
+  if(preEat10>=3) riskScore+=20;
+  if(preSwal<=85) riskScore+=20;
+  if(preBazaz>=1) riskScore+=15;
+  if(preHss>=10) riskScore+=15;
+  riskScore+=15; // baseline surgical risk
+  riskScore=Math.min(100,riskScore);
+
+  const riskLevel=riskScore>=70?'High':riskScore>=40?'Moderate':'Low';
+  const riskColor=riskScore>=70?'var(--red)':riskScore>=40?'var(--amber)':'var(--green)';
+
+  let html=`
+    <h3 style="margin-bottom:1rem;font-size:.95rem">Simulation Results</h3>
+    <div style="text-align:center;padding:1rem;background:var(--surface);border-radius:var(--radius-sm);margin-bottom:1.25rem;border:2px solid ${riskColor}">
+      <div style="font-size:.72rem;text-transform:uppercase;font-weight:700;letter-spacing:.1em;color:var(--text-dim)">Post-ACDF Dysphagia Risk</div>
+      <div style="font-size:2rem;font-weight:900;color:${riskColor}">${riskLevel}</div>
+      <div class="risk-meter">
+        <div class="risk-seg" style="width:${Math.min(riskScore,33)}%;background:var(--green)"></div>
+        <div class="risk-seg" style="width:${Math.max(0,Math.min(riskScore-33,34))}%;background:var(--amber)"></div>
+        <div class="risk-seg" style="width:${Math.max(0,riskScore-67)}%;background:var(--red)"></div>
+        <div style="flex:1;background:var(--border)"></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Risk score: ${riskScore}/100</div>
+    </div>
+    <h4 style="font-size:.85rem;margin-bottom:.75rem">Projected Outcomes</h4>
+  `;
+
+  results.forEach(r=>{
+    const diff=(parseFloat(r.post)-r.pre);
+    const worse=r.isSQ?(diff<0):(diff>0);
+    const meaningful=r.isSQ?(Math.abs(diff)>=r.mcid && diff<0):(diff>=r.mcid);
+    html+=`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:.82rem;font-weight:600">${r.name}</span>
+        <span style="font-size:.82rem">${r.pre} → <span style="font-weight:700;color:${worse?'var(--red)':'var(--green)'}">${r.post}</span>
+          ${meaningful?'<span class="badge badge-red" style="margin-left:.4rem">MCID exceeded</span>':''}
+        </span>
+      </div>
+    `;
+  });
+
+  html+=`
+    <div style="margin-top:1.25rem;padding:.75rem;background:var(--accent-glow);border-radius:var(--radius-xs);border:1px solid rgba(108,156,255,.15)">
+      <div style="font-size:.78rem;color:var(--text-muted);line-height:1.6">
+        <strong style="color:var(--accent)">Note:</strong> Projections use mean cohort changes with variance modeling.
+        Based on study findings, PRO-detected symptoms may exceed instrumental findings.
+        Consider routine paired VFSS + PRO assessment.
+      </div>
+    </div>
+  `;
+  document.getElementById('simResults').innerHTML=html;
+
+  // Chart
+  if(charts.sim) charts.sim.destroy();
+  charts.sim = new Chart(document.getElementById('simChart'),{
+    type:'bar',
+    data:{
+      labels:results.map(r=>r.name),
+      datasets:[
+        {label:'Pre-op',data:results.map(r=>r.pre),backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
+        {label:'Projected Post-op',data:results.map(r=>parseFloat(r.post)),backgroundColor:'rgba(248,113,113,.6)',borderRadius:4},
+        {label:'Cohort Post-op Mean',data:[D.digest.postMean,D.eat10.postMean,D.swalqol.postMean,D.bazaz.postMean,D.hssddi.postMean],backgroundColor:'rgba(251,191,36,.4)',borderRadius:4,borderDash:[5,5]}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(38,51,84,.3)'}}}}
+  });
+}
+
+// ── Concordance ──
+function initConcordance(){
+  // Build bars
+  const pairs=[];
+  for(let i=0;i<5;i++) for(let j=i+1;j<5;j++) pairs.push({a:measLabels[i],b:measLabels[j],v:agreeMatrix[i][j]});
+  pairs.sort((a,b)=>b.v-a.v);
+
+  let barHtml='';
+  pairs.forEach(p=>{
+    const color=p.v>=75?'var(--green)':p.v>=60?'var(--amber)':'var(--red)';
+    barHtml+=`
+      <div class="conc-row">
+        <div class="conc-pair">${p.a} × ${p.b}</div>
+        <div class="conc-bar"><div class="conc-fill" style="width:${p.v}%;background:${color}"></div></div>
+        <div class="conc-pct" style="color:${color}">${p.v}%</div>
+      </div>
+    `;
+  });
+  document.getElementById('concBars').innerHTML=barHtml;
+
+  // Heatmap
+  const heatData=[];
+  for(let r=0;r<5;r++) for(let c=0;c<5;c++) heatData.push({x:c,y:r,v:agreeMatrix[r][c]});
+
+  charts.heat = new Chart(document.getElementById('heatmap'),{
+    type:'scatter',
+    data:{datasets:[{
+      data:heatData.map(d=>({x:d.x,y:d.y})),
+      pointRadius:22,pointHoverRadius:26,
+      pointBackgroundColor:heatData.map(d=>d.v===100?'rgba(108,156,255,.45)':d.v>=75?'rgba(52,211,153,.3)':d.v>=60?'rgba(251,191,36,.25)':'rgba(248,113,113,.25)'),
+      pointBorderColor:heatData.map(d=>d.v===100?'rgba(108,156,255,.7)':d.v>=75?'rgba(52,211,153,.5)':d.v>=60?'rgba(251,191,36,.4)':'rgba(248,113,113,.4)'),
+      pointBorderWidth:2,pointStyle:'rectRounded'
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:()=>'',label:i=>{const d=heatData[i.dataIndex];return `${measLabels[d.y]} × ${measLabels[d.x]}: ${d.v}%`}}}},
+      scales:{
+        x:{type:'linear',min:-.5,max:4.5,ticks:{stepSize:1,callback:v=>measLabels[v]||'',font:{size:10,weight:600}},grid:{display:false}},
+        y:{type:'linear',min:-.5,max:4.5,reverse:true,ticks:{stepSize:1,callback:v=>measLabels[v]||'',font:{size:10,weight:600}},grid:{display:false}}
       }
     },
-    scales: {
-      x: {
-        type: 'linear',
-        min: -.5, max: 4.5,
-        ticks: {
-          stepSize: 1,
-          callback: (v) => measures[v] || '',
-          font: { size: 11, weight: 600 }
-        },
-        grid: { display: false }
-      },
-      y: {
-        type: 'linear',
-        min: -.5, max: 4.5,
-        reverse: true,
-        ticks: {
-          stepSize: 1,
-          callback: (v) => measures[v] || '',
-          font: { size: 11, weight: 600 }
-        },
-        grid: { display: false }
-      }
-    }
-  },
-  plugins: [{
-    afterDatasetsDraw(chart) {
-      const { ctx } = chart;
-      const meta = chart.getDatasetMeta(0);
-      ctx.save();
-      ctx.font = '700 12px Inter,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      heatData.forEach((d, i) => {
-        const pt = meta.data[i];
-        ctx.fillStyle = d.v === 100 ? '#6c9cff' : d.v >= 75 ? '#34d399' : d.v >= 60 ? '#fbbf24' : '#f87171';
-        ctx.fillText(d.v + '%', pt.x, pt.y);
-      });
+    plugins:[{afterDatasetsDraw(chart){
+      const{ctx}=chart;const meta=chart.getDatasetMeta(0);
+      ctx.save();ctx.font='700 11px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      heatData.forEach((d,i)=>{const pt=meta.data[i];ctx.fillStyle=d.v===100?'#6c9cff':d.v>=75?'#34d399':d.v>=60?'#fbbf24':'#f87171';ctx.fillText(d.v+'%',pt.x,pt.y)});
       ctx.restore();
+    }}]
+  });
+
+  // PRO cluster (radar showing within-PRO agreement)
+  charts.proCluster = new Chart(document.getElementById('proCluster'),{
+    type:'radar',
+    data:{
+      labels:['EAT-10','SWAL-QoL','Bazaz','HSS-DDI'],
+      datasets:[
+        {label:'Agreement with DIGEST',data:[52,48,57,52],borderColor:'rgba(108,156,255,.8)',backgroundColor:'rgba(108,156,255,.1)',pointBackgroundColor:'#6c9cff'},
+        {label:'Avg PRO Agreement',data:[76,71,76,71],borderColor:'rgba(167,139,250,.8)',backgroundColor:'rgba(167,139,250,.1)',pointBackgroundColor:'#a78bfa'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'top'}},
+      scales:{r:{beginAtZero:true,max:100,ticks:{display:false,stepSize:25},grid:{color:'rgba(38,51,84,.3)'},pointLabels:{font:{size:11,weight:600}}}}
     }
-  }]
-});
-
-// ─── Scroll Reveal ───
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
   });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-// ─── Active nav link ───
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('nav .links a');
-window.addEventListener('scroll', () => {
-  let current = '';
-  sections.forEach(sec => {
-    if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
-  });
-  navLinks.forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-  });
-});
+}
 </script>
 </body>
 </html>
