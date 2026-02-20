@@ -16,6 +16,9 @@ export default function PatientExplorer() {
     if (sel !== null) setSelected(parseInt(sel, 10));
   }, [searchParams]);
 
+  const filterCounts: Record<string, number> = { all: patients.length, worse: 0, stable: 0, improved: 0 };
+  patients.forEach(pt => { if (pt.digestDir in filterCounts) filterCounts[pt.digestDir]++; });
+
   const p = selected !== null ? patients[selected] : null;
 
   const radarData = p ? (() => {
@@ -35,7 +38,7 @@ export default function PatientExplorer() {
           <span style={{ fontSize: '.82rem', fontWeight: 600 }}>Filter:</span>
           {['all', 'worse', 'stable', 'improved'].map(f => (
             <button key={f} className={`btn filter-btn${filter === f ? ' active' : ''}`} onClick={() => setFilter(f)}>
-              {f === 'all' ? 'All (21)' : f.charAt(0).toUpperCase() + f.slice(1)}
+              {`${f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} (${filterCounts[f]})`}
             </button>
           ))}
         </div>

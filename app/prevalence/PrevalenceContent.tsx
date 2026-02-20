@@ -32,8 +32,8 @@ export default function PrevalenceContent() {
         <h3 className="chart-heading-sm">Clinically Meaningful Change by Measure</h3>
         <div className="chart-wrap" style={{ aspectRatio: '2.5/1' }}>
           <Bar data={{ labels: ['DIGEST','EAT-10','SWAL-QoL','HSS-DDI','Bazaz'], datasets: [
-            { label: 'Improved', data: [5,0,0,5,0], backgroundColor: 'rgba(52,211,153,.6)', borderRadius: 3 },
-            { label: 'Stable', data: [57,52,52,48,57], backgroundColor: 'rgba(108,156,255,.35)', borderRadius: 3 },
+            { label: 'Improved', data: [5,0,0,0,0], backgroundColor: 'rgba(52,211,153,.6)', borderRadius: 3 },
+            { label: 'Stable', data: [57,52,52,52,57], backgroundColor: 'rgba(108,156,255,.35)', borderRadius: 3 },
             { label: 'Worsened', data: [38,48,48,48,43], backgroundColor: 'rgba(248,113,113,.6)', borderRadius: 3 },
           ]}} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: i => `${i.dataset.label}: ${i.raw}%` } } }, scales: { x: { grid: { display: false }, stacked: true }, y: { stacked: true, beginAtZero: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(38,51,84,.3)' } } } }} />
         </div>

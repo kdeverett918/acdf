@@ -130,10 +130,10 @@ export default function ConcordanceContent() {
           <div className="chart-wrap" style={{ aspectRatio: '16/10' }}>
             <Bar
               data={{
-                labels: ['DIGEST\u00d7EAT-10', 'DIGEST\u00d7SWAL-QoL', 'DIGEST\u00d7Bazaz', 'DIGEST\u00d7HSS-DDI', 'MBSImP\u00d7EAT-10', 'MBSImP\u00d7SWAL-QoL'],
+                labels: ['DIGEST\u00d7EAT-10', 'DIGEST\u00d7SWAL-QoL', 'DIGEST\u00d7Bazaz', 'DIGEST\u00d7HSS-DDI', 'MBSImP\u00d7EAT-10', 'MBSImP\u00d7SWAL-QoL', 'MBSImP\u00d7Bazaz', 'MBSImP\u00d7HSS-DDI'],
                 datasets: [{
                   label: 'Agreement %',
-                  data: [agreeMatrix[0][2], agreeMatrix[0][3], agreeMatrix[0][4], agreeMatrix[0][5], agreeMatrix[1][2], agreeMatrix[1][3]],
+                  data: [agreeMatrix[0][2], agreeMatrix[0][3], agreeMatrix[0][4], agreeMatrix[0][5], agreeMatrix[1][2], agreeMatrix[1][3], agreeMatrix[1][4], agreeMatrix[1][5]],
                   backgroundColor: 'rgba(108,156,255,.5)',
                   borderRadius: 4,
                 }]
@@ -172,7 +172,7 @@ export default function ConcordanceContent() {
                     pointRadius: 5,
                   },
                   {
-                    label: 'Avg Agreement with DIGEST',
+                    label: 'Agreement with DIGEST',
                     data: proKeys.map((_, i) => agreeMatrix[0][i + 2]),
                     borderColor: 'rgba(108,156,255,.8)',
                     backgroundColor: 'rgba(108,156,255,.15)',
