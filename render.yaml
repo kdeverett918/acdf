@@ -2,6 +2,7 @@ services:
   - type: web
     name: acdf
     runtime: docker
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
