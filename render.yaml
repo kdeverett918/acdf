@@ -1,7 +1,9 @@
 services:
   - type: web
     name: acdf
-    runtime: static
-    buildCommand: echo "Static site - no build needed"
-    staticPublishPath: .
-    pullRequestPreviewsEnabled: true
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production

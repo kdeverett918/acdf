@@ -1,0 +1,12 @@
+{
+  "name": "acdf-swallow-outcomes",
+  "version": "1.0.0",
+  "description": "Interactive visualization of ACDF swallowing outcomes research",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
