@@ -260,14 +260,14 @@ a{color:var(--accent);text-decoration:none}
 
   <div class="grid-4" style="margin-bottom:2rem">
     <div class="card stat-card"><div class="num" style="color:var(--accent)">21</div><div class="lbl">Participants</div></div>
-    <div class="card stat-card"><div class="num" style="color:var(--red)">5/5</div><div class="lbl">Measures Worsened</div></div>
+    <div class="card stat-card"><div class="num" style="color:var(--red)">6/6</div><div class="lbl">Measures Worsened</div></div>
     <div class="card stat-card"><div class="num" style="color:var(--amber)">2&times;</div><div class="lbl">PRO vs VFSS Incidence</div></div>
     <div class="card stat-card"><div class="num" style="color:var(--purple)">&ne;</div><div class="lbl">Patient-Level Agreement</div></div>
   </div>
 
   <div class="grid-2" style="margin-bottom:1.5rem">
     <div class="card">
-      <h3 style="margin-bottom:1rem;font-size:.95rem">Pre vs Post-Op Scores (All Measures)</h3>
+      <h3 style="margin-bottom:1rem;font-size:.95rem">Pre vs Post-Op Severity (Normalized % of Scale)</h3>
       <div class="chart-wrap" style="aspect-ratio:16/9"><canvas id="dashOverview"></canvas></div>
     </div>
     <div class="card">
@@ -305,7 +305,7 @@ a{color:var(--accent);text-decoration:none}
         <div class="tl-dot" style="background:var(--red)"></div>
         <div class="tl-content">
           <h4>6-Week Post-Operative Assessment</h4>
-          <p>Repeat VFSS and all PROs — all 5 measures significantly worse</p>
+          <p>Repeat VFSS and all PROs — all 6 measures significantly worse</p>
         </div>
       </div>
       <div class="tl-item">
@@ -425,9 +425,9 @@ a{color:var(--accent);text-decoration:none}
 
 <!-- ════════════════ RISK SIMULATOR ════════════════ -->
 <div class="page" id="page-simulator">
-  <div class="section-label">Predictive Modeling</div>
+  <div class="section-label">Illustrative Projection</div>
   <h1 class="page-title">Risk Simulator</h1>
-  <p class="page-desc">Input a hypothetical patient's pre-operative scores to estimate their post-ACDF risk profile based on study data patterns.</p>
+  <p class="page-desc">Input a hypothetical patient's pre-operative scores to see estimated post-ACDF projections based on mean cohort changes from this study. Results are illustrative, not validated predictions.</p>
 
   <div class="grid-2" style="margin-bottom:1.5rem">
     <div class="card">
@@ -627,7 +627,7 @@ for(let i=0;i<21;i++){
     p[k+'_pre']=D[k].pre[i]; p[k+'_post']=D[k].post[i];
     const diff = D[k].post[i]-D[k].pre[i];
     const mcid = D[k].mcid;
-    if(k==='swalqol') p[k+'_change'] = diff <= mcid ? 'worse' : diff >= -mcid ? 'stable' : 'improved';
+    if(k==='swalqol') p[k+'_change'] = diff <= mcid ? 'worse' : diff >= Math.abs(mcid) ? 'improved' : 'stable';
     else p[k+'_change'] = diff >= mcid ? 'worse' : diff <= -mcid ? 'improved' : 'stable';
   });
   p.digestDir = p.digest_change;
@@ -698,19 +698,29 @@ function initPage(pg){
 // ── Dashboard (always init) ──
 (function initDashboard(){
   const keys = Object.keys(D);
+  // Normalize to % of max severity for comparable display
+  const maxScales={digest:4,mbsimp:28,eat10:40,swalqol:100,bazaz:3,hssddi:100};
+  const normPre=keys.map(k=>{
+    const v=D[k].preMean,mx=maxScales[k];
+    return k==='swalqol'?((100-v)/100*100):((v/mx)*100);
+  });
+  const normPost=keys.map(k=>{
+    const v=D[k].postMean,mx=maxScales[k];
+    return k==='swalqol'?((100-v)/100*100):((v/mx)*100);
+  });
   charts.dashOverview = new Chart(document.getElementById('dashOverview'),{
     type:'bar',
     data:{
       labels: keys.map(k=>D[k].label),
       datasets:[
-        {label:'Pre-op Mean',data:keys.map(k=>D[k].preMean),backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
-        {label:'Post-op Mean',data:keys.map(k=>D[k].postMean),backgroundColor:'rgba(248,113,113,.6)',borderRadius:4}
+        {label:'Pre-op Severity',data:normPre.map(v=>+v.toFixed(1)),backgroundColor:'rgba(108,156,255,.6)',borderRadius:4},
+        {label:'Post-op Severity',data:normPost.map(v=>+v.toFixed(1)),backgroundColor:'rgba(248,113,113,.6)',borderRadius:4}
       ]
     },
     options:{
       responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{position:'top'}},
-      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(38,51,84,.3)'}}}
+      plugins:{legend:{position:'top'},tooltip:{callbacks:{label:i=>`${i.dataset.label}: ${i.raw}% of max severity`}}},
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(38,51,84,.3)'}}}
     }
   });
 
@@ -906,7 +916,6 @@ function selectPatient(idx){
     const isSQ=k==='swalqol';
     const worse=isSQ?diff<0:diff>0;
     const color=worse?'var(--red)':'var(--green)';
-    const pct=d.scale.includes('100') ? Math.abs(diff) : Math.abs(diff);
     html+=`
       <div style="margin-bottom:.65rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -1034,8 +1043,8 @@ function runCalc(){
 
   if(isSQ){
     if(diff<=mcid){direction='Worsened';severity=diff<=-28?'Severe':diff<=-14?'Moderate':'Mild';sevClass=diff<=-28?'score-severe':diff<=-14?'score-moderate':'score-mild'}
-    else if(diff>=-mcid){direction='Stable';severity='No meaningful change';sevClass='score-normal'}
-    else{direction='Improved';severity='Positive change';sevClass='score-normal'}
+    else if(diff>=Math.abs(mcid)){direction='Improved';severity='Positive change';sevClass='score-normal'}
+    else{direction='Stable';severity='No meaningful change';sevClass='score-normal'}
   } else {
     if(diff>=mcid){direction='Worsened';severity=diff>=mcid*3?'Severe':diff>=mcid*2?'Moderate':'Mild';sevClass=diff>=mcid*3?'score-severe':diff>=mcid*2?'score-moderate':'score-mild'}
     else if(diff<=-mcid){direction='Improved';severity='Positive change';sevClass='score-normal'}
