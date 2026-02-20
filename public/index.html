@@ -3,10 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive visualization of ACDF swallowing outcomes — Jones-Rastelli et al., Laryngoscope 2025">
+<meta property="og:title" content="ACDF Swallowing Outcomes — Interactive Research Platform">
+<meta property="og:description" content="Comparing VFSS and patient-reported swallowing outcomes pre- and post-ACDF surgery. Interactive data explorer from Jones-Rastelli et al. (2025).">
+<meta property="og:type" content="website">
 <title>ACDF Swallowing Outcomes — Interactive Research Platform</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -41,7 +46,7 @@ a{color:var(--accent);text-decoration:none}
 .sidebar-header .logo{font-weight:900;font-size:1rem;color:var(--accent);letter-spacing:-.03em}
 .sidebar-header .sub{font-size:.7rem;color:var(--text-dim);margin-top:.15rem}
 .sidebar-nav{flex:1;overflow-y:auto;padding:.75rem 0}
-.nav-section{padding:.5rem 1.5rem .25rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)}
+.nav-section{padding:.5rem 1.5rem .25rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)}
 .nav-item{
   display:flex;align-items:center;gap:.65rem;padding:.55rem 1.5rem;
   font-size:.85rem;color:var(--text-muted);cursor:pointer;transition:all .15s;
@@ -65,7 +70,7 @@ a{color:var(--accent);text-decoration:none}
 /* ── Common ── */
 .page-title{font-size:clamp(1.5rem,3vw,2rem);margin-bottom:.35rem}
 .page-desc{font-size:.9rem;color:var(--text-muted);margin-bottom:2rem;max-width:680px;line-height:1.65}
-.section-label{text-transform:uppercase;font-size:.7rem;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:.5rem}
+.section-label{text-transform:uppercase;font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:.5rem}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:all .25s}
 .card:hover{border-color:var(--border-light)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
@@ -106,6 +111,8 @@ a{color:var(--accent);text-decoration:none}
 .form-group select:focus,.form-group input:focus{outline:none;border-color:var(--accent)}
 .form-group input[type="range"]{padding:0;height:6px;-webkit-appearance:none;appearance:none;background:var(--border);border:none;border-radius:3px;cursor:pointer}
 .form-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer}
+.form-group input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+.form-group input[type="range"]::-moz-range-track{height:6px;background:var(--border);border-radius:3px}
 .range-val{font-size:.85rem;font-weight:700;color:var(--accent);float:right}
 .btn{
   display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.25rem;
@@ -173,69 +180,84 @@ a{color:var(--accent);text-decoration:none}
 .risk-meter{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:1rem 0}
 .risk-seg{transition:width .6s cubic-bezier(.16,1,.3,1)}
 
-/* ── Modal Overlay ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;place-items:center}
-.modal-overlay.show{display:grid}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:600px;width:90%;max-height:85vh;overflow-y:auto}
-.modal h3{margin-bottom:1rem}
-.modal-close{float:right;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem}
-
 /* ── Footer ── */
 .page-footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--text-dim)}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
+*{scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+/* ── Filter buttons ── */
+.filter-btn.active{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
+
+/* ── Focus ── */
+.nav-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:2px}
+.tab-btn:focus-visible,.btn:focus-visible,.patient-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── Sidebar backdrop ── */
+.sidebar-backdrop{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5)}
+.sidebar.open~.sidebar-backdrop{display:block}
 </style>
 </head>
 <body>
 
 <!-- Mobile toggle -->
-<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+<button class="mobile-toggle" onclick="const s=document.querySelector('.sidebar');s.classList.toggle('open');document.getElementById('sidebarBackdrop').style.display=s.classList.contains('open')?'block':'none'">
   <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 </button>
 
 <div class="app">
 <!-- ── Sidebar ── -->
-<aside class="sidebar">
+<aside class="sidebar" aria-label="Main navigation">
   <div class="sidebar-header">
     <div class="logo">ACDF Outcomes</div>
     <div class="sub">Interactive Research Platform</div>
   </div>
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Section navigation">
     <div class="nav-section">Study</div>
-    <div class="nav-item active" data-page="dashboard">
+    <div class="nav-item active" data-page="dashboard" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       Dashboard
     </div>
-    <div class="nav-item" data-page="outcomes">
+    <div class="nav-item" data-page="outcomes" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Outcome Explorer
     </div>
-    <div class="nav-item" data-page="prevalence">
+    <div class="nav-item" data-page="prevalence" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
       Prevalence &amp; Incidence
     </div>
     <div class="nav-section">Interactive Tools</div>
-    <div class="nav-item" data-page="patients">
+    <div class="nav-item" data-page="patients" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Patient Explorer
     </div>
-    <div class="nav-item" data-page="calculator">
+    <div class="nav-item" data-page="calculator" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
       Score Calculators
     </div>
-    <div class="nav-item" data-page="simulator">
+    <div class="nav-item" data-page="simulator" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       Risk Simulator
     </div>
-    <div class="nav-item" data-page="concordance">
+    <div class="nav-item" data-page="concordance" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       Concordance Analysis
     </div>
     <div class="nav-section">Reference</div>
-    <div class="nav-item" data-page="about">
+    <div class="nav-item" data-page="about" tabindex="0" role="button">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       About &amp; Citation
     </div>
   </nav>
+  <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);font-size:.68rem;color:var(--text-dim);line-height:1.5">
+    Molfenter Lab &middot; NYU<br>Research Platform v2.0
+  </div>
 </aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'"></div>
 
 <main class="main">
 <!-- ════════════════ DASHBOARD ════════════════ -->
@@ -322,12 +344,13 @@ a{color:var(--accent);text-decoration:none}
     <h4>Central Finding</h4>
     <p>The presence or absence of dysphagia symptoms <strong>does not reliably correspond</strong> with observed physical impairments after ACDF. PROs detected greater increases in prevalence and incidence than DIGEST, and while overall rates of clinically meaningful change were similar, <strong>they did not consistently identify the same patients</strong>.</p>
   </div>
+  <div class="page-footer">Jones-Rastelli et al. (2025) &middot; <em>Laryngoscope</em> &middot; Molfenter Lab, NYU</div>
 </div>
 
 <!-- ════════════════ OUTCOME EXPLORER ════════════════ -->
 <div class="page" id="page-outcomes">
   <div class="section-label">Interactive Exploration</div>
-  <h1 class="page-title">Outcome Explorer</h1>
+  <h2 class="page-title">Outcome Explorer</h2>
   <p class="page-desc">Select any measure to see per-patient pre/post data, statistics, and clinical context. Click individual patient bars for detail.</p>
 
   <div class="tab-row" id="outcomeTabs"></div>
@@ -346,7 +369,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ════════════════ PREVALENCE ════════════════ -->
 <div class="page" id="page-prevalence">
   <div class="section-label">Detection Rates</div>
-  <h1 class="page-title">Prevalence &amp; Incidence</h1>
+  <h2 class="page-title">Prevalence &amp; Incidence</h2>
   <p class="page-desc">PROs detected far greater postoperative increases in both point prevalence and new-onset incidence compared with DIGEST.</p>
 
   <div class="grid-2" style="margin-bottom:1.5rem">
@@ -369,12 +392,13 @@ a{color:var(--accent);text-decoration:none}
     <h4>Clinical Interpretation</h4>
     <p>Patients may perceive swallowing difficulties (globus sensation, effortful swallowing) <strong>even when objective pharyngeal physiology appears relatively preserved</strong>. Conversely, some patients with observable VFSS changes may <strong>not report symptoms</strong> due to compensation strategies or reduced awareness.</p>
   </div>
+  <div class="page-footer">Jones-Rastelli et al. (2025) &middot; <em>Laryngoscope</em> &middot; Molfenter Lab, NYU</div>
 </div>
 
 <!-- ════════════════ PATIENT EXPLORER ════════════════ -->
 <div class="page" id="page-patients">
   <div class="section-label">Individual Trajectories</div>
-  <h1 class="page-title">Patient Explorer</h1>
+  <h2 class="page-title">Patient Explorer</h2>
   <p class="page-desc">Click any patient to see their complete outcome profile across all measures. Color coding reflects DIGEST change direction.</p>
 
   <div class="card" style="margin-bottom:1.5rem">
@@ -407,7 +431,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ════════════════ SCORE CALCULATORS ════════════════ -->
 <div class="page" id="page-calculator">
   <div class="section-label">Clinical Tools</div>
-  <h1 class="page-title">Score Calculators</h1>
+  <h2 class="page-title">Score Calculators</h2>
   <p class="page-desc">Enter pre- and post-operative scores to compute change, determine clinical significance, and compare against the study cohort.</p>
 
   <div class="tab-row" id="calcTabs"></div>
@@ -426,7 +450,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ════════════════ RISK SIMULATOR ════════════════ -->
 <div class="page" id="page-simulator">
   <div class="section-label">Illustrative Projection</div>
-  <h1 class="page-title">Risk Simulator</h1>
+  <h2 class="page-title">Risk Simulator</h2>
   <p class="page-desc">Input a hypothetical patient's pre-operative scores to see estimated post-ACDF projections based on mean cohort changes from this study. Results are illustrative, not validated predictions.</p>
 
   <div class="grid-2" style="margin-bottom:1.5rem">
@@ -467,7 +491,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ════════════════ CONCORDANCE ════════════════ -->
 <div class="page" id="page-concordance">
   <div class="section-label">Measure Agreement</div>
-  <h1 class="page-title">Concordance Analysis</h1>
+  <h2 class="page-title">Concordance Analysis</h2>
   <p class="page-desc">Explore how well different outcome measures agree at the individual patient level. Low concordance between VFSS and PROs is a key finding.</p>
 
   <div class="card" style="margin-bottom:1.5rem">
@@ -490,12 +514,13 @@ a{color:var(--accent);text-decoration:none}
     <h4>Key Insight</h4>
     <p>DIGEST shows only <strong>~48–57% agreement</strong> with PROs on the direction of clinically meaningful change. Even among PROs, agreement is imperfect (67–81%), indicating each instrument captures a different facet of the swallowing experience. This supports <strong>multi-dimensional assessment</strong> as the clinical standard.</p>
   </div>
+  <div class="page-footer">Jones-Rastelli et al. (2025) &middot; <em>Laryngoscope</em> &middot; Molfenter Lab, NYU</div>
 </div>
 
 <!-- ════════════════ ABOUT ════════════════ -->
 <div class="page" id="page-about">
   <div class="section-label">Reference</div>
-  <h1 class="page-title">About This Study</h1>
+  <h2 class="page-title">About This Study</h2>
 
   <div class="card" style="margin-bottom:1.5rem">
     <h3 style="margin-bottom:.75rem">Citation</h3>
@@ -596,7 +621,7 @@ const D = {
   },
   swalqol: {
     key:'swalqol',label:'SWAL-QoL',fullName:'Swallowing Quality of Life Questionnaire',
-    type:'Patient-Reported (PRO)',scale:'0–100%',dir:'Lower = worse',
+    type:'Patient-Reported (PRO)',scale:'0–100',dir:'Lower = worse',
     pre:[98,92,100,85,95,97,80,100,96,98,82,97,99,93,86,100,95,100,94,76,100],
     post:[82,78,92,68,86,80,62,95,76,90,70,82,92,80,72,88,78,94,82,58,92],
     preMean:93.5,postMean:80.4,preSD:7.3,postSD:9.8,p:'<0.001',mcid:-14,
@@ -653,7 +678,7 @@ const pages = document.querySelectorAll('.page');
 const inited = new Set();
 
 navItems.forEach(item=>{
-  item.addEventListener('click',()=>{
+  const handler=()=>{
     const pg = item.dataset.page;
     navItems.forEach(n=>n.classList.remove('active'));
     item.classList.add('active');
@@ -661,7 +686,10 @@ navItems.forEach(item=>{
     document.getElementById('page-'+pg).classList.add('active');
     if(!inited.has(pg)){inited.add(pg);initPage(pg)}
     document.querySelector('.sidebar').classList.remove('open');
-  });
+    const bd=document.getElementById('sidebarBackdrop');if(bd)bd.style.display='none';
+  };
+  item.addEventListener('click',handler);
+  item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();handler()}});
 });
 
 // ═══════════════════════════════════════════
@@ -774,7 +802,7 @@ function buildOutcome(key){
     options:{
       responsive:true,maintainAspectRatio:true,
       interaction:{mode:'index',intersect:false},
-      onClick:(e,els)=>{if(els.length){const idx=els[0].index;selectPatient(idx)}},
+      onClick:(e,els)=>{if(els.length){const idx=els[0].index;const pNav=document.querySelector('[data-page="patients"]');if(pNav.classList.contains('active')){selectPatient(idx)}else{pNav.click();setTimeout(()=>selectPatient(idx),100)}}},
       plugins:{legend:{position:'top'},tooltip:{callbacks:{title:i=>`Patient ${i[0].label}`}}},
       scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{beginAtZero:true,reverse:isSQ,title:{display:true,text:d.label+' Score'},grid:{color:'rgba(38,51,84,.3)'}}}
     }
@@ -823,7 +851,7 @@ function buildOutcome(key){
       <div style="font-size:.72rem;color:var(--text-muted)">p = ${d.p} · MCID: ${Math.abs(d.mcid)}</div>
     </div>
     <p style="font-size:.82rem;color:var(--text-muted);line-height:1.6">${d.desc}</p>
-    <p style="font-size:.75rem;color:var(--text-dim);margin-top:.75rem;font-style:italic">Click any bar in the chart to explore that patient.</p>
+    <p style="font-size:.75rem;color:var(--text-dim);margin-top:.75rem;font-style:italic">Click any chart bar to jump to Patient Explorer for that individual.</p>
   `;
 }
 
@@ -869,7 +897,7 @@ function initPatients(){
 
   document.querySelectorAll('.filter-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.remove('active');b.style.background='';b.style.borderColor='var(--border)';b.style.color='var(--text-muted)'});
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       renderPatientGrid(btn.dataset.filter);
     });
@@ -961,10 +989,10 @@ function selectPatient(idx){
     }
   });
 
-  // Navigate to patients page if not there
+  // Scroll patient profile into view if on patients page
   const patientsNav = document.querySelector('[data-page="patients"]');
-  if(!patientsNav.classList.contains('active')){
-    patientsNav.click();
+  if(patientsNav.classList.contains('active')){
+    document.getElementById('patientProfile').scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 }
 
