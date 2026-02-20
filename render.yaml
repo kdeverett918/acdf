@@ -1,9 +1,7 @@
 services:
   - type: web
     name: acdf
-    runtime: node
-    buildCommand: npm install
-    startCommand: node server.js
+    runtime: docker
     envVars:
       - key: NODE_ENV
         value: production
