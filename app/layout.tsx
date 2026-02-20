@@ -7,14 +7,17 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'ACDF Swallowing Outcomes \u2014 Interactive Research Platform',
+  title: {
+    default: 'ACDF Swallowing Outcomes \u2014 Interactive Research Platform',
+    template: '%s \u2014 ACDF Swallowing Outcomes',
+  },
   description: 'Interactive visualization of ACDF swallowing outcomes \u2014 Jones-Rastelli et al., Laryngoscope 2025',
   openGraph: {
     title: 'ACDF Swallowing Outcomes \u2014 Interactive Research Platform',
     description: 'Comparing VFSS and patient-reported swallowing outcomes pre- and post-ACDF surgery.',
     type: 'website',
   },
-  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\ud83d\udcca</text></svg>" },
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

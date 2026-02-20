@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About & Citation',
+  description: 'Citation details, author information, and instrument descriptions for the ACDF swallowing outcomes study.',
+};
+
 export default function About() {
   const instruments = [
     { name: 'DIGEST', full: 'Dynamic Imaging Grade of Swallowing Toxicity', type: 'Instrumental (VFSS)', scale: '0–4', desc: 'Composite grade of swallowing safety and efficiency from videofluoroscopy.' },

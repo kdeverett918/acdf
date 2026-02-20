@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -21,6 +21,15 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
 
   return (
     <>
@@ -57,7 +66,16 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {open && <div className="sidebar-backdrop" onClick={() => setOpen(false)} />}
+      {open && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setOpen(false)}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setOpen(false); }}
+          role="button"
+          aria-label="Close navigation"
+          tabIndex={0}
+        />
+      )}
     </>
   );
 }
