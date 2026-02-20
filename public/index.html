@@ -788,7 +788,7 @@ function buildOutcome(key){
     data:{labels,datasets:[{
       label:'Change (Post - Pre)',
       data:changes,
-      backgroundColor:changes.map(c=> isSQ ? (c<0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)') : (c>0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)')),
+      backgroundColor:changes.map(c=> c===0?'rgba(108,156,255,.35)': isSQ ? (c<0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)') : (c>0?'rgba(248,113,113,.6)':'rgba(52,211,153,.6)')),
       borderRadius:3
     }]},
     options:{
@@ -977,7 +977,7 @@ function renderSwimLanes(){
     measures.forEach(m=>{
       const v=p[m+'_change'];
       const cls=v==='worse'?'background:rgba(248,113,113,.15);color:var(--red)':v==='improved'?'background:rgba(52,211,153,.15);color:var(--green)':'background:rgba(108,156,255,.1);color:var(--accent)';
-      const sym=v==='worse'?'↓':v==='improved'?'↑':'–';
+      const sym=v==='worse'?'W':v==='improved'?'I':'–';
       html+=`<div style="padding:.35rem;display:grid;place-items:center"><div style="width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.65rem;font-weight:700;${cls}" title="${p.label} ${m}: ${v}">${sym}</div></div>`;
     });
   });
@@ -1042,7 +1042,7 @@ function runCalc(){
   let direction,severity,sevClass;
 
   if(isSQ){
-    if(diff<=mcid){direction='Worsened';severity=diff<=-28?'Severe':diff<=-14?'Moderate':'Mild';sevClass=diff<=-28?'score-severe':diff<=-14?'score-moderate':'score-mild'}
+    if(diff<=mcid){direction='Worsened';severity=diff<=-28?'Severe':diff<=-21?'Moderate':'Mild';sevClass=diff<=-28?'score-severe':diff<=-21?'score-moderate':'score-mild'}
     else if(diff>=Math.abs(mcid)){direction='Improved';severity='Positive change';sevClass='score-normal'}
     else{direction='Stable';severity='No meaningful change';sevClass='score-normal'}
   } else {
@@ -1081,10 +1081,12 @@ function runCalc(){
     </div>
   `;
 
-  // Distribution chart
+  // Distribution chart — use sentinel to track user's entry through sort
   const changes=d.post.map((v,i)=>v-d.pre[i]);
-  const allChanges=[...changes,diff].sort((a,b)=>a-b);
-  const patientIdx=allChanges.indexOf(diff);
+  const entries=[...changes.map(v=>({v,isUser:false})),{v:diff,isUser:true}];
+  entries.sort((a,b)=>a.v-b.v);
+  const allChanges=entries.map(e=>e.v);
+  const patientIdx=entries.findIndex(e=>e.isUser);
 
   if(charts.calcDist) charts.calcDist.destroy();
   charts.calcDist = new Chart(document.getElementById('calcDist'),{
