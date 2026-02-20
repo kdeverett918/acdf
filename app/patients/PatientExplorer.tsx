@@ -13,7 +13,7 @@ export default function PatientExplorer() {
 
   useEffect(() => {
     const sel = searchParams.get('select');
-    if (sel !== null) setSelected(parseInt(sel));
+    if (sel !== null) setSelected(parseInt(sel, 10));
   }, [searchParams]);
 
   const p = selected !== null ? patients[selected] : null;

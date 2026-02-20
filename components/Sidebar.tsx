@@ -34,7 +34,7 @@ export default function Sidebar() {
   return (
     <>
       <button className="mobile-toggle" onClick={() => setOpen(!open)} aria-label="Toggle navigation menu">
-        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
 
       <aside className={`sidebar${open ? ' open' : ''}`} aria-label="Main navigation">
@@ -55,7 +55,7 @@ export default function Sidebar() {
                 className={`nav-item${isActive ? ' active' : ''}`}
                 onClick={() => setOpen(false)}
               >
-                <svg viewBox="0 0 24 24">{item.icon}</svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg>
                 {item.label}
               </Link>
             );

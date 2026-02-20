@@ -63,8 +63,8 @@ export default function DashboardContent() {
               data={{
                 labels: ['DIGEST', 'Bazaz', 'EAT-10', 'SWAL-QoL', 'HSS-DDI'],
                 datasets: [
-                  { label: 'VFSS Incidence', data: [29, null, null, null, null], backgroundColor: 'rgba(108,156,255,.6)', borderRadius: 4 },
-                  { label: 'PRO Incidence', data: [null, 59, 53, 59, 47], backgroundColor: 'rgba(167,139,250,.6)', borderRadius: 4 },
+                  { label: 'VFSS Incidence', data: [29, null, null, null, null] as (number | null)[], backgroundColor: 'rgba(108,156,255,.6)', borderRadius: 4 },
+                  { label: 'PRO Incidence', data: [null, 59, 53, 59, 47] as (number | null)[], backgroundColor: 'rgba(167,139,250,.6)', borderRadius: 4 },
                 ]
               }}
               options={{

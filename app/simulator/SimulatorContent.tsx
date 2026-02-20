@@ -37,21 +37,21 @@ export default function SimulatorContent() {
   const [preDigest, setPreDigest] = useState(0);
   const [prePRO, setPrePRO] = useState(1);
   const [ran, setRan] = useState(false);
-  const [lastParams, setLastParams] = useState('');
+  const [frozenParams, setFrozenParams] = useState<{ age: number; levels: number; preDigest: number; prePRO: number } | null>(null);
 
   const currentParams = `${age}-${levels}-${preDigest}-${prePRO}`;
+  const frozenKey = frozenParams ? `${frozenParams.age}-${frozenParams.levels}-${frozenParams.preDigest}-${frozenParams.prePRO}` : '';
 
   const results = useMemo(() => {
-    if (!ran) return null;
-    return runSimulation(age, levels, preDigest, prePRO);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ran, lastParams]);
+    if (!ran || !frozenParams) return null;
+    return runSimulation(frozenParams.age, frozenParams.levels, frozenParams.preDigest, frozenParams.prePRO);
+  }, [ran, frozenParams]);
 
-  const isStale = ran && currentParams !== lastParams;
+  const isStale = ran && currentParams !== frozenKey;
 
   const handleSimulate = () => {
     setRan(true);
-    setLastParams(currentParams);
+    setFrozenParams({ age, levels, preDigest, prePRO });
   };
 
   const overallRisk = results ? (results.digestRisk + results.proRisk) / 2 : 0;

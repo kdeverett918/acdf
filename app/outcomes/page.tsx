@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import OutcomeExplorer from './OutcomeExplorer';
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <OutcomeExplorer />;
+  return (
+    <Suspense fallback={<div>Loading outcome data...</div>}>
+      <OutcomeExplorer />
+    </Suspense>
+  );
 }
