@@ -85,9 +85,9 @@ export default function CalculatorContent() {
       <p className="page-desc">Calculate scores for each instrument and see how they compare to the study cohort distribution.</p>
 
       <div className="tab-row" role="tablist">
-        {instruments.map((inst, i) => (
-          <button key={inst.key} role="tab" aria-selected={active === i} className={`tab-btn${active === i ? ' active' : ''}`} onClick={() => handleTab(i)}>
-            {inst.label}
+        {instruments.map((tab, i) => (
+          <button key={tab.key} role="tab" aria-selected={active === i} className={`tab-btn${active === i ? ' active' : ''}`} onClick={() => handleTab(i)}>
+            {tab.label}
           </button>
         ))}
       </div>
@@ -100,7 +100,7 @@ export default function CalculatorContent() {
               <label>{item.label}</label>
               <select
                 value={vals[i]}
-                onChange={e => { const nv = [...vals]; nv[i] = parseInt(e.target.value); setVals(nv); }}
+                onChange={e => { const nv = [...vals]; nv[i] = parseInt(e.target.value, 10); setVals(nv); }}
               >
                 {item.options.map((opt, j) => (
                   <option key={j} value={item.values ? item.values[j] : j}>{opt}</option>

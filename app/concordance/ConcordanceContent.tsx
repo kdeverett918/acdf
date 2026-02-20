@@ -1,6 +1,7 @@
 'use client';
 
 import '@/lib/chartSetup';
+import type { Plugin } from 'chart.js';
 import { Bar, Scatter, Radar } from 'react-chartjs-2';
 import { measLabels, agreeMatrix, D } from '@/lib/data';
 
@@ -11,6 +12,27 @@ for (let i = 0; i < measLabels.length; i++) {
   }
 }
 pairs.sort((a, b) => agreeMatrix[b[0]][b[1]] - agreeMatrix[a[0]][a[1]]);
+
+const heatLabels = ['DIGEST', 'MBSImP', 'EAT-10', 'SWAL-Q', 'Bazaz', 'HSS-DDI'];
+
+const heatmapPlugin: Plugin<'scatter'> = {
+  id: 'heatmapLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const dataset = chart.data.datasets[0];
+    meta.data.forEach((point, i) => {
+      const raw = dataset.data[i] as unknown as { v: number };
+      ctx.save();
+      ctx.fillStyle = '#e2e8f4';
+      ctx.font = 'bold 10px Inter,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(raw.v), point.x, point.y);
+      ctx.restore();
+    });
+  },
+};
 
 const proKeys = ['eat10', 'swalqol', 'bazaz', 'hssddi'];
 const proLabels = proKeys.map(k => D[k].label);
@@ -58,8 +80,8 @@ export default function ConcordanceContent() {
                       const a = p.v / 100;
                       return p.v >= 75 ? `rgba(52,211,153,${.3 + a * .5})` : p.v >= 55 ? `rgba(251,191,36,${.3 + a * .4})` : `rgba(248,113,113,${.3 + a * .4})`;
                     }),
-                    pointRadius: pts.map(p => 14 + p.v / 10),
-                    pointHoverRadius: pts.map(p => 16 + p.v / 10),
+                    pointRadius: 18,
+                    pointHoverRadius: 21,
                   }];
                 })()
               }}
@@ -81,17 +103,23 @@ export default function ConcordanceContent() {
                 scales: {
                   x: {
                     type: 'linear', min: -.5, max: measLabels.length - .5,
-                    ticks: { stepSize: 1, callback: (v) => measLabels[v as number] || '', font: { size: 10 } },
+                    ticks: { stepSize: 1, callback: (v) => heatLabels[v as number] || '', font: { size: 10 } },
                     grid: { color: 'rgba(38,51,84,.15)' },
                   },
                   y: {
                     type: 'linear', min: -.5, max: measLabels.length - .5,
-                    ticks: { stepSize: 1, callback: (v) => measLabels[measLabels.length - 1 - (v as number)] || '', font: { size: 10 } },
+                    ticks: { stepSize: 1, callback: (v) => heatLabels[measLabels.length - 1 - (v as number)] || '', font: { size: 10 } },
                     grid: { color: 'rgba(38,51,84,.15)' },
                   },
                 },
               }}
+              plugins={[heatmapPlugin]}
             />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '.75rem', fontSize: '.72rem', color: 'var(--text-muted)' }}>
+            <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: 'rgba(52,211,153,.7)', marginRight: '.3rem' }} />&ge;75% Strong</span>
+            <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: 'rgba(251,191,36,.6)', marginRight: '.3rem' }} />55&ndash;74% Moderate</span>
+            <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: 'rgba(248,113,113,.6)', marginRight: '.3rem' }} />&lt;55% Low</span>
           </div>
         </div>
       </div>
